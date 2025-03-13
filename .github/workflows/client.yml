@@ -20,20 +20,29 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to ACA
-        uses: azure/container-apps-deploy-action@v2
+      - name: ACR Login
+        uses: azure/docker-login@v2
         with:
-          appSourcePath: ${{ github.workspace }}/client
-          acrName: sunbud
-          acrUsername: ${{ secrets.ACR_USERNAME }}
-          acrPassword: ${{ secrets.ACR_PASSWORD }}
-          imageToBuild: sunbud.azurecr.io/client:${{ github.sha }}
-          imageToDeploy: sunbud.azurecr.io/client:${{ github.sha }}
-          dockerfilePath: Dockerfile
-          containerAppName: sunbud-client
-          resourceGroup: ${{ secrets.RESOURCE_GROUP }}
-          buildArguments: "VITE_API_URL=${{ secrets.VITE_API_URL }}"
-          ingress: external
-          location: southeastasia
-          targetPort: 80
-          disableTelemetry: true
+          login-server: sunbud.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push FE
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            -t sunbud.azurecr.io/client:${{ github.sha }} ./client
+          docker push sunbud.azurecr.io/client:${{ github.sha }}
+
+      - name: Update Client Container
+        run: |
+          az containerapp up \
+            --name blossomy-client \
+            --image sunbud.azurecr.io/client:${{ github.sha }} \
+            --ingress external \
+            --location southeastasia \
+            --registry-server sunbud.azurecr.io \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --target-port 80 \
