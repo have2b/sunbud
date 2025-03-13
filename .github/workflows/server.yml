@@ -25,6 +25,8 @@ jobs:
         with:
           appSourcePath: ${{ github.workspace }}/server
           acrName: sunbud
+          acrUsername: ${{ secrets.ACR_USERNAME }}
+          acrPassword: ${{ secrets.ACR_PASSWORD }}
           imageToBuild: sunbud.azurecr.io/server:${{ github.sha }}
           imageToDeploy: sunbud.azurecr.io/server:${{ github.sha }}
           dockerfilePath: Dockerfile

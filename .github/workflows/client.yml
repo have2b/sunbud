@@ -25,11 +25,12 @@ jobs:
         with:
           appSourcePath: ${{ github.workspace }}/client
           acrName: sunbud
+          acrUsername: ${{ secrets.ACR_USERNAME }}
+          acrPassword: ${{ secrets.ACR_PASSWORD }}
           imageToBuild: sunbud.azurecr.io/client:${{ github.sha }}
           imageToDeploy: sunbud.azurecr.io/client:${{ github.sha }}
           dockerfilePath: Dockerfile
           containerAppName: sunbud-client
-          containerAppEnvironment: sunbud-container-env
           resourceGroup: ${{ secrets.RESOURCE_GROUP }}
           buildArguments: "VITE_API_URL=${{ secrets.VITE_API_URL }}"
           ingress: external
