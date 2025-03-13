@@ -1,0 +1,38 @@
+name: FE CI/CD Pipeline
+on:
+  push:
+    branches: [master]
+    paths:
+      - "client/**"
+jobs:
+  build-and-deploy:
+    permissions:
+      id-token: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to ACA
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/client
+          acrName: sunbud
+          imageToBuild: sunbud.azurecr.io/client:${{ github.sha }}
+          imageToDeploy: sunbud.azurecr.io/client:${{ github.sha }}
+          dockerfilePath: Dockerfile
+          containerAppName: sunbud-client
+          containerAppEnvironment: sunbud-container-env
+          resourceGroup: ${{ secrets.RESOURCE_GROUP }}
+          buildArguments: "VITE_API_URL=${{ secrets.VITE_API_URL }}"
+          ingress: external
+          location: southeastasia
+          targetPort: 80
+          disableTelemetry: true

@@ -1,0 +1,38 @@
+name: BE CI/CD Pipeline
+on:
+  push:
+    branches: [master]
+    paths:
+      - "server/**"
+jobs:
+  build-and-deploy:
+    permissions:
+      id-token: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to ACA
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/server
+          acrName: sunbud
+          imageToBuild: sunbud.azurecr.io/server:${{ github.sha }}
+          imageToDeploy: sunbud.azurecr.io/server:${{ github.sha }}
+          dockerfilePath: Dockerfile
+          containerAppName: sunbud-server
+          containerAppEnvironment: sunbud-container-env
+          resourceGroup: ${{ secrets.RESOURCE_GROUP }}
+          buildArguments: "TLS_POSTGRES_DATABASE_URL=${{ secrets.TLS_POSTGRES_DATABASE_URL }}"
+          ingress: external
+          location: southeastasia
+          targetPort: 5000
+          disableTelemetry: true
