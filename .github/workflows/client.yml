@@ -37,7 +37,7 @@ jobs:
       - name: Update Client Container
         run: |
           az containerapp up \
-            --name blossomy-client \
+            --name sunbud-client \
             --image sunbud.azurecr.io/client:${{ github.sha }} \
             --ingress external \
             --location southeastasia \
