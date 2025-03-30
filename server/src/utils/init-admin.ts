@@ -34,7 +34,7 @@ async function initializeRoles(): Promise<void> {
 
     await sql`
       INSERT INTO roles (name, description) VALUES
-      ('admin', 'Administrator with full access'),
+      ('admin', 'Administrator with full access')
     `;
     console.log("✅ Roles initialized successfully");
   } catch (error) {
