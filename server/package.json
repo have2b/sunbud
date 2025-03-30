@@ -1,7 +1,10 @@
 {
   "name": "server",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "init-admin": "bun run src/utils/init-admin.ts",
+    "reset-db": "bun run reset/reset.ts",
+    "setup-dev-db": "bun run scripts/setup-dev-db.ts"
   },
   "dependencies": {
     "hono": "^4.7.4"
