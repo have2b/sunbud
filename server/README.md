@@ -10,7 +10,7 @@ To run:
 bun run dev
 ```
 
-open http://localhost:3000
+open http://localhost:5000
 
 # Admin Initialization
 
@@ -24,84 +24,18 @@ The `init-admin.ts` script allows you to safely initialize an admin user in the 
 
 - The database must be set up with the schema from `server/sql/init-schema.sql`
 - The database connection must be configured in your `.env` file
+- Required environment variables must be set (see below)
 
 ### Usage
 
-There are two ways to initialize an admin user:
+#### Environment Variables Method (Required)
 
-#### 1. Interactive Method (Recommended for Development)
+1. Set the following **required** environment variables in your `.env` file or deployment environment:
 
-Run the following command:
-
-```bash
-npm run init-admin
-# or
-bun run init-admin
-```
-
-This will prompt you to enter:
-
-- Username
-- Email
-- Password (minimum 8 characters)
-- First Name
-- Last Name
-
-#### 2. Environment Variables Method (Recommended for Production/CI)
-
-1. Set the following environment variables in your `.env` file or CI/CD pipeline:
-
-```
+```env
 ADMIN_USERNAME="admin"
 ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="securepassword"
+ADMIN_PASSWORD="securepassword"  # Must be at least 8 characters
 ADMIN_FIRST_NAME="Admin"
 ADMIN_LAST_NAME="User"
-```
-
-2. Run the initialization script:
-
-```bash
-npm run init-admin
-# or
-bun run init-admin
-```
-
-### Security Notes
-
-- The script checks if roles and admin users already exist to prevent duplicate creation
-- Passwords are securely hashed using SHA-256 with a random salt
-- The salt is stored in the user's metadata JSON field
-- In production, consider using a more robust password hashing algorithm like Argon2 or bcrypt
-
-### Integration with Database Reset
-
-If you want to reset your database and initialize an admin user in one step, you can create a custom script that:
-
-1. Resets the database using `reset/reset.ts`
-2. Initializes the admin user using `utils/init-admin.ts`
-
-Example:
-
-```typescript
-// server/scripts/setup-dev-db.ts
-import { resetDatabase } from "../reset/reset";
-import { initializeAdmin } from "../utils/init-admin";
-
-async function setupDevDatabase() {
-  try {
-    // Reset database
-    await resetDatabase();
-
-    // Initialize admin
-    await initializeAdmin();
-
-    console.log("✅ Database setup completed successfully");
-  } catch (error) {
-    console.error("❌ Database setup failed:", error);
-    process.exit(1);
-  }
-}
-
-setupDevDatabase();
 ```
