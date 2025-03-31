@@ -10,7 +10,7 @@ interface ResetConfig {
 }
 
 const DEFAULT_CONFIG: ResetConfig = {
-  resetScriptPath: "./reset/reset-script.sql",
+  resetScriptPath: "./sql/reset-script.sql",
   schemaScriptPath: "./sql/init-schema.sql",
   verbose: true,
   timeout: 30000, // 30 seconds timeout

@@ -2,8 +2,8 @@
   "name": "server",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "init-admin": "bun run src/utils/init-admin.ts",
-    "reset-db": "bun run reset/reset.ts",
+    "init-admin": "bun run scripts/init-admin.ts",
+    "reset-db": "bun run scripts/reset.ts",
     "setup-dev-db": "bun run scripts/setup-dev-db.ts"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
-import { resetDatabase } from "../reset/reset";
-import { initializeAdmin } from "../src/utils/init-admin";
+import { initializeAdmin } from "./init-admin";
+import { resetDatabase } from "./reset";
 
 /**
  * Sets up a development database by:
