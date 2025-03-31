@@ -62,12 +62,11 @@ async function createAdminUser(): Promise<void> {
     await sql`
       INSERT INTO users (
         role_id, username, email, password_hash, 
-        first_name, last_name, created_at, metadata
+        first_name, last_name, created_at
       ) VALUES (
         ${roleId}, ${process.env.ADMIN_USERNAME!}, ${process.env
       .ADMIN_EMAIL!}, ${passwordHash}, 
-        ${process.env.ADMIN_FIRST_NAME!}, ${process.env
-      .ADMIN_LAST_NAME!}, NOW(), '{}'
+        ${process.env.ADMIN_FIRST_NAME!}, ${process.env.ADMIN_LAST_NAME!}, NOW()
       )
     `;
     console.log("✅ Admin user created successfully");

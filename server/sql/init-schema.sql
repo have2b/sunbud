@@ -24,9 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_name VARCHAR(50) NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ,
-  last_login TIMESTAMPTZ,
   avatar_url VARCHAR(512),
-  metadata JSONB
 );
 
 -- Categories table (self-referential for subcategories)

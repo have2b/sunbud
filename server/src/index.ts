@@ -4,7 +4,10 @@ import { AuthRepository } from "./repositories/auth-repository";
 import { AuthRoutes } from "./routes/auth-routes";
 import { AuthService } from "./services/auth-service";
 
+import { logger } from "hono/logger";
+
 const app = new Hono().basePath("/api");
+app.use(logger());
 
 const authRepository = new AuthRepository();
 const authService = new AuthService(authRepository);
