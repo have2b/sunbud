@@ -21,7 +21,11 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
     return await sign(
-      { id: user.id, email: user.email, role: user.role_id },
+      {
+        id: user.id,
+        role: user.role_id,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2,
+      },
       process.env.AUTH_SECRET!
     );
   }
