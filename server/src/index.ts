@@ -5,6 +5,7 @@ import { AuthRoutes } from "./routes/auth-routes";
 import { AuthService } from "./services/auth-service";
 
 import { sql } from "bun";
+import { jwt } from "hono/jwt";
 import { logger } from "hono/logger";
 
 const app = new Hono().basePath("/api");
@@ -16,6 +17,8 @@ const authController = new AuthController(authService);
 const authRoutes = new AuthRoutes(authController);
 
 app.route("/auth", authRoutes.getRouter());
+
+app.use("/*", jwt({ secret: process.env.AUTH_SECRET! }));
 
 app.get("/db-name", async (c) => {
   const db = await sql`SELECT CURRENT_CATALOG;`;
