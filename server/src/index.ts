@@ -35,6 +35,10 @@ app.get("/db-name", async (c) => {
   return c.json(db);
 });
 
+app.get("/cors", (c) => {
+  return c.json(process.env.CLIENT_URL);
+});
+
 export default {
   port: 5000,
   fetch: app.fetch,
