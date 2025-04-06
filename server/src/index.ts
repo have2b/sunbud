@@ -12,6 +12,12 @@ import { RoleRepository } from "./repositories/role-repository";
 
 const app = new Hono().basePath("/api");
 app.use(logger());
+
+app.use("*", async (c, next) => {
+  console.log("Origin Header:", c.req.header("origin"));
+  await next();
+});
+
 app.use(
   "*",
   cors({
@@ -33,10 +39,6 @@ app.use("/*", jwt({ secret: process.env.AUTH_SECRET!, cookie: "jwt" }));
 app.get("/db-name", async (c) => {
   const db = await sql`SELECT CURRENT_CATALOG;`;
   return c.json(db);
-});
-
-app.get("/cors", (c) => {
-  return c.json(process.env.CLIENT_URL);
 });
 
 export default {
