@@ -3,15 +3,20 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "init-admin": "bun run scripts/init-admin.ts",
-    "reset-db": "bun run scripts/reset.ts",
-    "setup-dev-db": "bun run scripts/setup-dev-db.ts"
+    "reset-db": "bun run src/db/reset-db.ts"
   },
   "dependencies": {
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.41.0",
     "hono": "^4.7.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "pg": "^8.14.1"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/lodash": "^4.17.16"
+    "@types/lodash": "^4.17.16",
+    "@types/pg": "^8.11.12",
+    "drizzle-kit": "^0.30.6",
+    "tsx": "^4.19.3"
   }
 }

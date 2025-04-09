@@ -1,23 +1,16 @@
 import { Hono } from "hono";
-import { AuthController } from "./controllers/auth-controller";
-import { AuthRepository } from "./repositories/auth-repository";
-import { AuthRoutes } from "./routes/auth-routes";
-import { AuthService } from "./services/auth-service";
+import { AuthController } from "./controllers/auth.controller";
+import { AuthRepository } from "./repositories/auth.repository";
+import { AuthRoutes } from "./routes/auth.routes";
+import { AuthService } from "./services/auth.service";
 
 import { sql } from "bun";
 import { cors } from "hono/cors";
 import { jwt } from "hono/jwt";
 import { logger } from "hono/logger";
-import { RoleRepository } from "./repositories/role-repository";
 
 const app = new Hono().basePath("/api");
 app.use(logger());
-
-app.use("*", async (c, next) => {
-  console.log("Origin Header:", c.req.header("origin"));
-  await next();
-});
-
 app.use(
   "*",
   cors({
@@ -27,8 +20,7 @@ app.use(
 );
 
 const authRepository = new AuthRepository();
-const roleRepository = new RoleRepository();
-const authService = new AuthService(authRepository, roleRepository);
+const authService = new AuthService(authRepository);
 const authController = new AuthController(authService);
 const authRoutes = new AuthRoutes(authController);
 

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -87,6 +87,9 @@ function Login() {
           <Button type="submit" className="w-full">
             Login
           </Button>
+          <div className="flex items-center justify-between">
+            <Link to="/register">Don't have an account?</Link>
+          </div>
         </form>
       </Form>
     </section>

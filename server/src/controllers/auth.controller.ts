@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { omit } from "lodash";
-import { AuthService } from "../services/auth-service";
+import { AuthService } from "../services/auth.service";
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -18,5 +18,12 @@ export class AuthController {
       path: "/",
     });
     return c.json({ ...result, data: omit(result.data, ["token"]) });
+  }
+
+  async register(c: Context) {
+    const body = await c.req.json();
+    const result = await this.authService.register(body);
+
+    return c.json(result);
   }
 }

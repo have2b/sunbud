@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/hooks/useAuthStore";
 import api from "@/lib/api";
 import { LoginRequest, LoginResponse } from "./dtos/login";
+import { RegisterRequest, RegisterResponse } from "./dtos/register";
 
 export const authService = {
   login: async (req: LoginRequest) => {
@@ -15,4 +16,9 @@ export const authService = {
     return response.data;
   },
   // To use cookie for authorization, we just need add withCredentials: true
+  register: async (req: RegisterRequest) => {
+    const response = await api.post<RegisterResponse>("/auth/register", req);
+
+    return response.data;
+  },
 };
