@@ -34,7 +34,7 @@ jobs:
           containerAppEnvironment: sunbud-container-env
           resourceGroup: ${{ secrets.RESOURCE_GROUP }}
           environmentVariables: "NODE_ENV=production CLIENT_URL=${{ secrets.CLIENT_URL }}"
-          buildArguments: "TLS_POSTGRES_DATABASE_URL=${{ secrets.TLS_POSTGRES_DATABASE_URL }} AUTH_SECRET=${{ secrets.AUTH_SECRET }} CLIENT_URL=${{ secrets.CLIENT_URL }}"
+          buildArguments: "DATABASE_URL=${{ secrets.DATABASE_URL }} AUTH_SECRET=${{ secrets.AUTH_SECRET }} CLIENT_URL=${{ secrets.CLIENT_URL }}"
           ingress: external
           location: southeastasia
           targetPort: 5000
