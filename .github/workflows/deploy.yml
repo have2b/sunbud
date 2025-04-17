@@ -39,6 +39,7 @@ jobs:
             --name sunbud \
             --image sunbud.azurecr.io/sunbud:${{ github.sha }} \
             --ingress external \
+            --environment sunbud-container-env \
             --location southeastasia \
             --registry-server sunbud.azurecr.io \
             --registry-username ${{ secrets.ACR_USERNAME }} \
