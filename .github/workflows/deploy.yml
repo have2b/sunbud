@@ -1,0 +1,38 @@
+name: Deployment
+on:
+  push:
+    branches: [master]
+jobs:
+  build-and-deploy:
+    permissions:
+      id-token: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to ACA
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          acrName: sunbud
+          acrUsername: ${{ secrets.ACR_USERNAME }}
+          acrPassword: ${{ secrets.ACR_PASSWORD }}
+          imageToBuild: sunbud.azurecr.io/sunbud:${{ github.sha }}
+          imageToDeploy: sunbud.azurecr.io/sunbud:${{ github.sha }}
+          dockerfilePath: Dockerfile
+          containerAppName: sunbud
+          containerAppEnvironment: sunbud-container-env
+          resourceGroup: ${{ secrets.RESOURCE_GROUP }}
+          environmentVariables: "NODE_ENV=production"
+          buildArguments: "DATABASE_URL=${{ secrets.DATABASE_URL }} JWT_SECRET=${{ secrets.JWT_SECRET }}"
+          ingress: external
+          location: southeastasia
+          targetPort: 5000
+          disableTelemetry: true

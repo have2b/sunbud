@@ -1,9 +1,0 @@
-# deps
-node_modules/
-
-.env
-
-build
-
-slim.*
-generated/prisma/
