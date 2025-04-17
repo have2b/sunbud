@@ -30,14 +30,14 @@ jobs:
           docker build \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            -t sunbud.azurecr.io/sunbud:${{ github.sha }} .
-          docker push sunbud.azurecr.io/sunbud:${{ github.sha }}
+            -t sunbud.azurecr.io/sunbud-client:${{ github.sha }} .
+          docker push sunbud.azurecr.io/sunbud-client:${{ github.sha }}
 
       - name: Update Container
         run: |
           az containerapp up \
-            --name sunbud \
-            --image sunbud.azurecr.io/sunbud:${{ github.sha }} \
+            --name sunbud-client \
+            --image sunbud.azurecr.io/sunbud-client:${{ github.sha }} \
             --ingress external \
             --environment sunbud-container-env \
             --location southeastasia \
