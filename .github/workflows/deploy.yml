@@ -18,21 +18,30 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to ACA
-        uses: azure/container-apps-deploy-action@v2
+      - name: ACR Login
+        uses: azure/docker-login@v2
         with:
-          acrName: sunbud
-          acrUsername: ${{ secrets.ACR_USERNAME }}
-          acrPassword: ${{ secrets.ACR_PASSWORD }}
-          imageToBuild: sunbud.azurecr.io/sunbud:${{ github.sha }}
-          imageToDeploy: sunbud.azurecr.io/sunbud:${{ github.sha }}
-          dockerfilePath: Dockerfile
-          containerAppName: sunbud
-          containerAppEnvironment: sunbud-container-env
-          resourceGroup: ${{ secrets.RESOURCE_GROUP }}
-          environmentVariables: "NODE_ENV=production"
-          buildArguments: "DATABASE_URL=${{ secrets.DATABASE_URL }} JWT_SECRET=${{ secrets.JWT_SECRET }}"
-          ingress: external
-          location: southeastasia
-          targetPort: 5000
-          disableTelemetry: true
+          login-server: sunbud.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push container
+        run: |
+          docker build \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -t sunbud.azurecr.io/sunbud:${{ github.sha }} .
+          docker push sunbud.azurecr.io/sunbud:${{ github.sha }}
+
+      - name: Update Container
+        run: |
+          az containerapp up \
+            --name sunbud \
+            --image sunbud.azurecr.io/sunbud:${{ github.sha }} \
+            --ingress external \
+            --location southeastasia \
+            --registry-server sunbud.azurecr.io \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --target-port 3000 \
