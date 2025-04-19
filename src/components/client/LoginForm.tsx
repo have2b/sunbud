@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -46,8 +47,14 @@ const LoginForm = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      router.push("/protected");
+      toast.success(data.message);
       setAuth(data.data, data.data.expiresIn);
+      router.push("/protected");
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || error.message;
+      toast.error(msg);
     },
   });
 

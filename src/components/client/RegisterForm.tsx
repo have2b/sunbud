@@ -19,6 +19,7 @@ import { ArrowRightIcon, Check, Circle, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -64,8 +65,14 @@ const RegisterForm = () => {
       const response = await axios.post("/api/register", data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      toast.success(data.message);
       router.push("/login");
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || error.message;
+      toast.error(msg);
     },
   });
 

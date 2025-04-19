@@ -13,24 +13,27 @@ export async function POST(request: NextRequest) {
   const user = await db.query.users.findFirst({
     where: or(
       eq(users.email, emailOrUsername),
-      eq(users.username, emailOrUsername)
+      eq(users.username, emailOrUsername),
     ),
   });
 
   if (!user) {
     return NextResponse.json(
-      makeResponse({ status: 401, data: {}, message: "Invalid credentials" }),
-      { status: 401 }
+      makeResponse({
+        status: 401,
+        data: {},
+        message: "Tài khoản không tồn tại",
+      }),
+      { status: 401 },
     );
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
-    console.log("Invalid password");
     return NextResponse.json(
-      makeResponse({ status: 401, data: {}, message: "Invalid credentials" }),
-      { status: 401 }
+      makeResponse({ status: 401, data: {}, message: "Mật khẩu không đúng" }),
+      { status: 401 },
     );
   }
 
@@ -50,9 +53,9 @@ export async function POST(request: NextRequest) {
         }),
         expiresIn: process.env.EXPIRED_TIME,
       },
-      message: "Login successful",
+      message: "Đăng nhập thành công",
     }),
-    { status: 200 }
+    { status: 200 },
   );
 
   response.cookies.set("jwt", token, {

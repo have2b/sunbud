@@ -2,6 +2,7 @@ import { db } from "@/db/db";
 import { users } from "@/db/schema";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 import { eq, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   if (isEmailExists) {
     return NextResponse.json(
-      makeResponse({ status: 409, data: {}, message: "Email has been used" }),
+      makeResponse({ status: 409, data: {}, message: "Email đã tồn tại" }),
       { status: 409 },
     );
   }
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
       makeResponse({
         status: 409,
         data: {},
-        message: "Username has been used",
+        message: "Tên đăng nhập đã tồn tại",
       }),
       { status: 409 },
     );
@@ -41,12 +42,17 @@ export async function POST(request: NextRequest) {
 
   if (isPhoneExists) {
     return NextResponse.json(
-      makeResponse({ status: 409, data: {}, message: "Phone has been used" }),
+      makeResponse({
+        status: 409,
+        data: {},
+        message: "Số điện thoại đã tồn tại",
+      }),
       { status: 409 },
     );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
+  const avatarUrl = `https://api.dicebear.com/5.x/identicon/svg?seed=${randomUUID()}`;
 
   await db.insert(users).values({
     username,
@@ -54,7 +60,8 @@ export async function POST(request: NextRequest) {
     passwordHash: hashedPassword,
     firstName,
     lastName,
-    phone: "",
+    phone,
+    avatarUrl,
     role: "USER",
   });
 
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
     makeResponse({
       status: 200,
       data: {},
-      message: "Register successful",
+      message: "Đăng ký thành công",
     }),
     { status: 200 },
   );
