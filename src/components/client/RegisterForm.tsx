@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { registerSchema, RegisterSchema } from "@/validations/auth.validation";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { motion } from "framer-motion";
-import { ArrowRightIcon, LockKeyhole } from "lucide-react";
+import { ArrowRightIcon, Check, Circle, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 
@@ -23,11 +23,36 @@ const RegisterForm = () => {
     defaultValues: {
       username: "",
       email: "",
+      phone: "",
       firstName: "",
       lastName: "",
       password: "",
     },
   });
+  const passwordValue = form.watch("password");
+  const passwordRequirements = [
+    { label: "Tối thiểu 8 ký tự", isValid: (pw: string) => pw.length >= 8 },
+    {
+      label: "Tối thiểu một ký tự đặc biệt",
+      isValid: (pw: string) => /[^A-Za-z0-9]/.test(pw),
+    },
+    {
+      label: "Tối thiểu một chữ hoa",
+      isValid: (pw: string) => /[A-Z]/.test(pw),
+    },
+    { label: "Tối thiểu một số", isValid: (pw: string) => /[0-9]/.test(pw) },
+  ];
+
+  const phoneValue = form.watch("phone");
+  const phoneRequirements = [
+    { label: "Bắt đầu bằng 0", isValid: (ph: string) => ph.startsWith("0") },
+    {
+      label: "Ký tự thứ 2 là 9,8,3,5",
+      isValid: (ph: string) => /^0[9835]/.test(ph),
+    },
+    { label: "Chỉ số", isValid: (ph: string) => /^\d+$/.test(ph) },
+    { label: "10 ký tự", isValid: (ph: string) => ph.length === 10 },
+  ];
 
   async function onSubmit(request: RegisterSchema) {
     console.log(request);
@@ -35,37 +60,28 @@ const RegisterForm = () => {
 
   return (
     <section className="flex h-full w-full items-center justify-center">
-      <div className="w-full max-w-md px-4 shadow-2xl md:px-0">
+      <div className="w-full max-w-md rounded-2xl px-4 shadow-2xl md:px-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col items-center gap-6 p-8"
         >
           {/* Header Section */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
-              <LockKeyhole className="h-8 w-8 text-rose-300" />
-              <p className="bg-rose-300 bg-clip-text text-4xl font-black text-transparent uppercase">
-                Create Account
+              <LockKeyhole className="text-primary size-6 md:size-8" />
+              <p className="bg-primary bg-clip-text text-2xl font-black text-transparent uppercase md:text-4xl">
+                Đăng ký
               </p>
             </div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-muted-foreground text-center text-base font-medium"
-            >
-              Join our community today
-            </motion.p>
           </div>
 
           {/* Form Section */}
           <Form {...form}>
             <motion.form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="w-full space-y-6 rounded-2xl bg-white/80 p-8 shadow-2xl shadow-rose-100/30 backdrop-blur-lg"
+              className="w-full space-y-4 rounded-2xl bg-white/80"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
@@ -77,14 +93,14 @@ const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-semibold text-gray-600">
-                      Username
+                      Tên đăng nhập
                     </FormLabel>
                     <FormControl>
                       <motion.div whileHover={{ scale: 1.01 }}>
                         <Input
-                          placeholder="Enter username..."
+                          placeholder="Tên đăng nhập..."
                           {...field}
-                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                         />
                       </motion.div>
                     </FormControl>
@@ -105,12 +121,77 @@ const RegisterForm = () => {
                     <FormControl>
                       <motion.div whileHover={{ scale: 1.01 }}>
                         <Input
-                          placeholder="Enter email..."
+                          placeholder="Email..."
                           {...field}
-                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                         />
                       </motion.div>
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Phone Field */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-600">
+                      Điện thoại
+                    </FormLabel>
+                    <FormControl>
+                      <motion.div whileHover={{ scale: 1.01 }}>
+                        <Input
+                          placeholder="Số điện thoại..."
+                          {...field}
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
+                        />
+                      </motion.div>
+                    </FormControl>
+                    <div className="mt-2">
+                      <ul className="space-y-1">
+                        {phoneRequirements.map((req) => (
+                          <motion.li
+                            key={req.label}
+                            className="flex items-center gap-2"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {req.isValid(phoneValue) ? (
+                              <motion.div
+                                key="check"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                              >
+                                <Check className="h-4 w-4 text-green-500" />
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="circle"
+                                initial={{ scale: 1 }}
+                                animate={{ scale: 0.8 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Circle className="h-4 w-4 text-gray-300" />
+                              </motion.div>
+                            )}
+                            <span
+                              className={
+                                req.isValid(phoneValue)
+                                  ? "text-green-600"
+                                  : "text-gray-600"
+                              }
+                            >
+                              {req.label}
+                            </span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -130,14 +211,14 @@ const RegisterForm = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-600">
-                        First Name
+                        Họ
                       </FormLabel>
                       <FormControl>
                         <motion.div whileHover={{ scale: 1.01 }}>
                           <Input
-                            placeholder="Enter first name..."
+                            placeholder="Họ..."
                             {...field}
-                            className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                            className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                           />
                         </motion.div>
                       </FormControl>
@@ -153,14 +234,14 @@ const RegisterForm = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-600">
-                        Last Name
+                        Tên
                       </FormLabel>
                       <FormControl>
                         <motion.div whileHover={{ scale: 1.01 }}>
                           <Input
-                            placeholder="Enter last name..."
+                            placeholder="Tên..."
                             {...field}
-                            className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                            className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                           />
                         </motion.div>
                       </FormControl>
@@ -177,18 +258,43 @@ const RegisterForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-semibold text-gray-600">
-                      Password
+                      Mật khẩu
                     </FormLabel>
                     <FormControl>
                       <motion.div whileHover={{ scale: 1.01 }}>
                         <Input
-                          placeholder="Your password..."
+                          placeholder="Mật khẩu..."
                           {...field}
                           type="password"
-                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                         />
                       </motion.div>
                     </FormControl>
+                    <div className="mt-2">
+                      <ul className="space-y-1">
+                        {passwordRequirements.map((req) => (
+                          <li
+                            key={req.label}
+                            className="flex items-center gap-2"
+                          >
+                            {req.isValid(passwordValue) ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-gray-300" />
+                            )}
+                            <span
+                              className={
+                                req.isValid(passwordValue)
+                                  ? "text-green-600"
+                                  : "text-gray-600"
+                              }
+                            >
+                              {req.label}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -202,9 +308,9 @@ const RegisterForm = () => {
               >
                 <Button
                   type="submit"
-                  className="w-full gap-2 rounded-lg bg-gradient-to-r from-rose-400 to-purple-500 py-3 text-base font-semibold text-white shadow-lg transition-all hover:shadow-rose-200/40"
+                  className="bg-primary hover:bg-primary/85 w-full gap-2 rounded-lg py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer"
                 >
-                  Create Account
+                  Đăng ký
                   <ArrowRightIcon className="h-4 w-4" />
                 </Button>
               </motion.div>
@@ -216,12 +322,12 @@ const RegisterForm = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                Already have an account?{" "}
+                Đã có tài khoản?{" "}
                 <Link
                   href="/login"
-                  className="font-semibold text-rose-400 transition-colors hover:text-rose-500"
+                  className="text-primary hover:text-secondary font-semibold transition-colors"
                 >
-                  Sign in
+                  Đăng nhập
                 </Link>
               </motion.div>
             </motion.form>

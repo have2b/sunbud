@@ -57,37 +57,28 @@ const LoginForm = () => {
 
   return (
     <section className="flex h-full w-full items-center justify-center">
-      <div className="w-full max-w-md px-4 shadow-2xl md:px-0">
+      <div className="w-full max-w-lg rounded-2xl px-4 shadow-2xl md:px-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col items-center gap-6 p-8"
         >
           {/* Header Section */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
-              <LockKeyhole className="h-8 w-8 text-rose-300" />
-              <p className="bg-rose-300 bg-clip-text text-4xl font-black text-transparent uppercase">
-                Mừng bạn trở lại
+              <LockKeyhole className="text-primary size-6 md:size-8" />
+              <p className="text-primary text-2xl font-black uppercase md:text-4xl">
+                Đăng nhập
               </p>
             </div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-muted-foreground text-center text-base font-medium"
-            >
-              Mời bạn đăng nhập
-            </motion.p>
           </div>
 
           {/* Form Section */}
           <Form {...form}>
             <motion.form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="w-full space-y-6 rounded-2xl bg-white/80 p-8 shadow-2xl shadow-rose-100/30 backdrop-blur-lg"
+              className="w-full space-y-4 rounded-2xl bg-white/80"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
@@ -106,7 +97,7 @@ const LoginForm = () => {
                         <Input
                           placeholder="Email hoặc tên đăng nhập của bạn..."
                           {...field}
-                          className="rounded-lg border-2 border-slate-300 px-4 py-3 transition-all focus-visible:border-blue-300"
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                         />
                       </motion.div>
                     </FormControl>
@@ -130,7 +121,7 @@ const LoginForm = () => {
                           placeholder="Mật khẩu của bạn..."
                           {...field}
                           type="password"
-                          className="rounded-lg border-2 border-slate-300 px-4 py-3 transition-all focus-visible:border-blue-300"
+                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
                         />
                       </motion.div>
                     </FormControl>
@@ -147,7 +138,7 @@ const LoginForm = () => {
               >
                 <Button
                   type="submit"
-                  className="w-full gap-2 rounded-lg bg-rose-400 py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer hover:bg-rose-500 hover:shadow-rose-200/40"
+                  className="bg-primary hover:bg-primary/85 w-full gap-2 rounded-lg py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer"
                   disabled={loginMutation.isPending}
                 >
                   Đăng nhập
@@ -165,7 +156,7 @@ const LoginForm = () => {
                 {`Chưa có tài khoản?${" "}`}
                 <Link
                   href="/register"
-                  className="font-semibold text-rose-400 transition-colors hover:text-rose-500"
+                  className="text-primary hover:text-secondary font-semibold transition-colors"
                 >
                   Đăng ký
                 </Link>
