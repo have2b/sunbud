@@ -141,7 +141,7 @@ const LoginForm = () => {
                   className="bg-primary hover:bg-primary/85 w-full gap-2 rounded-lg py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer"
                   disabled={loginMutation.isPending}
                 >
-                  Đăng nhập
+                  {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
                   <ArrowRightIcon className="h-4 w-4" />
                 </Button>
               </motion.div>

@@ -12,12 +12,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { registerSchema, RegisterSchema } from "@/validations/auth.validation";
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { ArrowRightIcon, Check, Circle, LockKeyhole } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 const RegisterForm = () => {
+  const router = useRouter();
+
   const form = useForm<RegisterSchema>({
     resolver: valibotResolver(registerSchema),
     defaultValues: {
@@ -54,8 +59,18 @@ const RegisterForm = () => {
     { label: "10 ký tự", isValid: (ph: string) => ph.length === 10 },
   ];
 
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegisterSchema) => {
+      const response = await axios.post("/api/register", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
+
   async function onSubmit(request: RegisterSchema) {
-    console.log(request);
+    registerMutation.mutate(request);
   }
 
   return (
@@ -309,8 +324,9 @@ const RegisterForm = () => {
                 <Button
                   type="submit"
                   className="bg-primary hover:bg-primary/85 w-full gap-2 rounded-lg py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer"
+                  disabled={registerMutation.isPending}
                 >
-                  Đăng ký
+                  {registerMutation.isPending ? "Đang đăng ký..." : "Đăng ký"}
                   <ArrowRightIcon className="h-4 w-4" />
                 </Button>
               </motion.div>
