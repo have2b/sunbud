@@ -17,12 +17,8 @@ const OTPForm = () => {
   const router = useRouter();
   const [otp, setOtp] = useState<string>("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState<number>(() => {
-    const expiry = Number(localStorage.getItem("otpExpiry"));
-    const diff = Math.ceil((expiry - Date.now()) / 1000);
-    return diff > 0 ? diff : 0;
-  });
-  const [expired, setExpired] = useState<boolean>(() => secondsLeft <= 0);
+  const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  const [expired, setExpired] = useState<boolean>(false);
 
   const startCountdown = (initialSeconds: number) => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -41,6 +37,18 @@ const OTPForm = () => {
       }, 1000);
     }
   };
+
+  useEffect(() => {
+    const expiryStr = localStorage.getItem("otpExpiry");
+    if (expiryStr) {
+      const expiry = Number(expiryStr);
+      const initialSeconds = Math.ceil((expiry - Date.now()) / 1000);
+      startCountdown(initialSeconds > 0 ? initialSeconds : 0);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     startCountdown(secondsLeft);

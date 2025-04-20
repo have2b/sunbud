@@ -4,6 +4,23 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { to, subject, html } = await request.json();
+
+  if (
+    typeof to !== "string" ||
+    typeof subject !== "string" ||
+    typeof html !== "string"
+  ) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message:
+          "Missing or invalid fields: to, subject, and html are required.",
+      }),
+      { status: 400 },
+    );
+  }
+
   await sendEmail(to, subject, html);
   return NextResponse.json(
     makeResponse({
