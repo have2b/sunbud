@@ -49,7 +49,7 @@ const LoginForm = () => {
     onSuccess: (data) => {
       toast.success(data.message);
       setAuth(data.data, data.data.expiresIn);
-      router.push("/protected");
+      router.push("/");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {

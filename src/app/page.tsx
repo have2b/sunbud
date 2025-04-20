@@ -1,5 +1,11 @@
-import Link from "next/link";
+import Header from "@/components/common/Header";
+import HeroSection from "@/components/common/HeroSection";
 
 export default function Home() {
-  return <Link href={"/login"}>Go to login</Link>;
+  return (
+    <>
+      <Header />
+      <HeroSection />
+    </>
+  );
 }
