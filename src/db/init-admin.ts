@@ -38,13 +38,13 @@ const REQUIRED_ENV_VARS = [
  */
 function validateEnvironmentVars(): void {
   const missingVars = REQUIRED_ENV_VARS.filter(
-    (varName) => !process.env[varName]
+    (varName) => !process.env[varName],
   );
 
   if (missingVars.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missingVars.join(", ")}\n` +
-        "Please set these in your .env file or deployment environment."
+        "Please set these in your .env file or deployment environment.",
     );
   }
 
@@ -76,6 +76,8 @@ async function createAdminUser(): Promise<void> {
       phone: process.env.ADMIN_PHONE!,
       avatarUrl: "https://github.com/have2b.png",
       role: "ADMIN",
+      otp: "",
+      isVerified: true,
     });
 
     console.log("✅ Admin user created successfully");
@@ -96,7 +98,7 @@ export async function initializeAdmin(): Promise<void> {
   } catch (error) {
     console.error(
       "❌ Admin initialization failed:",
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : error,
     );
     if (process.env.NODE_ENV !== "test") {
       process.exit(1);

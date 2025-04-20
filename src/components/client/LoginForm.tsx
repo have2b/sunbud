@@ -15,7 +15,7 @@ import { loginSchema, LoginSchema } from "@/validations/auth.validation";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowRightIcon, LockKeyhole } from "lucide-react";
+import { ArrowRightIcon, DoorClosedIcon, LockKeyhole } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,6 +44,7 @@ const LoginForm = () => {
   const loginMutation = useMutation({
     mutationFn: async (data: LoginSchema) => {
       const response = await axios.post("/api/login", data);
+
       return response.data;
     },
     onSuccess: (data) => {
@@ -85,7 +86,7 @@ const LoginForm = () => {
           <Form {...form}>
             <motion.form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="w-full space-y-4 rounded-2xl bg-white/80"
+              className="w-full space-y-2 rounded-2xl bg-white/80"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
@@ -155,17 +156,36 @@ const LoginForm = () => {
 
               {/* Additional Links */}
               <motion.div
-                className="pt-4 text-center text-sm text-gray-500"
+                className="flex items-center justify-between pt-4 text-center text-sm text-gray-500"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                {`Chưa có tài khoản?${" "}`}
                 <Link
                   href="/register"
                   className="text-primary hover:text-secondary font-semibold transition-colors"
                 >
                   Đăng ký
+                </Link>
+                <Link
+                  href="/forgot-password"
+                  className="text-primary hover:text-secondary font-semibold transition-colors"
+                >
+                  Quên mật khẩu?
+                </Link>
+              </motion.div>
+              <motion.div
+                className="w-full text-center text-sm text-gray-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Link
+                  href="/"
+                  className="hover:text-secondary flex items-center justify-center gap-2 font-semibold transition-colors"
+                >
+                  <DoorClosedIcon />
+                  <span>Trở về trang chủ</span>
                 </Link>
               </motion.div>
             </motion.form>

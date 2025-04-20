@@ -65,9 +65,10 @@ const RegisterForm = () => {
       const response = await axios.post("/api/register", data);
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(data.message);
-      router.push("/login");
+      localStorage.setItem("otpExpiry", data.data.otpExpiry.toString());
+      router.push("/otp");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {

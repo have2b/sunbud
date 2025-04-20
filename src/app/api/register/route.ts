@@ -1,5 +1,7 @@
 import { db } from "@/db/db";
 import { users } from "@/db/schema";
+import { sendEmail } from "@/lib/email";
+import { generateOtpEmail } from "@/lib/emailTemplates";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -54,6 +56,8 @@ export async function POST(request: NextRequest) {
   const hashedPassword = await bcrypt.hash(password, 10);
   const avatarUrl = `https://api.dicebear.com/5.x/identicon/svg?seed=${randomUUID()}`;
 
+  const otp = randomUUID().slice(0, 6);
+
   await db.insert(users).values({
     username,
     email,
@@ -63,12 +67,18 @@ export async function POST(request: NextRequest) {
     phone,
     avatarUrl,
     role: "USER",
+    otp,
   });
+
+  const { subject, html } = generateOtpEmail(firstName, lastName, otp);
+  await sendEmail(email, subject, html);
 
   const response = NextResponse.json(
     makeResponse({
       status: 200,
-      data: {},
+      data: {
+        otpExpiry: new Date().getTime() + 60000, // 1 minutes
+      },
       message: "Đăng ký thành công",
     }),
     { status: 200 },

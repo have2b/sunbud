@@ -1,4 +1,5 @@
 import {
+  boolean,
   pgEnum,
   pgTable,
   text,
@@ -44,6 +45,8 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
   role: roleEnum("role").default("USER").notNull(),
+  otp: varchar("otp", { length: 6 }).notNull(),
+  isVerified: boolean("is_verified").default(false).notNull(),
 });
 
 export type User = typeof users.$inferSelect;
