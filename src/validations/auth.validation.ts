@@ -26,3 +26,9 @@ export const registerSchema = v.object({
 });
 
 export type RegisterSchema = v.InferOutput<typeof registerSchema>;
+
+export const forgotPasswordSchema = v.object({
+  email: v.pipe(v.string(), v.email("Địa chỉ email không hợp lệ")),
+});
+
+export type ForgotPasswordSchema = v.InferOutput<typeof forgotPasswordSchema>;
