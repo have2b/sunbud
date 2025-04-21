@@ -36,6 +36,4 @@ export const avatarDropdownItems = [
 export const mainNavItems = [
   { label: "Trang chủ", href: "/" },
   { label: "Sản phẩm", href: "/shop" },
-  { label: "Giới thiệu", href: "/about" },
-  { label: "Liên hệ", href: "/contact" },
 ];

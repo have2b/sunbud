@@ -93,7 +93,7 @@ const LoginForm = () => {
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <User className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
+                      <User className="text-muted-foreground absolute top-2.5 left-3 size-5" />
                       <Input
                         placeholder="Email hoặc tên đăng nhập của bạn..."
                         {...field}
@@ -115,7 +115,7 @@ const LoginForm = () => {
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Lock className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
+                      <Lock className="text-muted-foreground absolute top-2.5 left-3 size-5" />
                       <Input
                         placeholder="Mật khẩu của bạn..."
                         {...field}
