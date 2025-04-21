@@ -4,6 +4,7 @@ export function generateOtpEmail(
   otp: string,
 ): { subject: string; html: string; text: string } {
   const subject = "Xác nhận tài khoản";
+  const expiresTime = Number(process.env.OTP_EXPIRED_TIME!);
 
   const html = `
 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; padding: 30px;">
@@ -12,12 +13,12 @@ export function generateOtpEmail(
     <p style="font-size: 16px; color: #555555;">Bạn đã yêu cầu mã OTP để xác nhận tài khoản của mình.</p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <div style="display: inline-block; padding: 15px 30px; background-color: #007BFF; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 2px; border-radius: 8px;">
+      <div style="display: inline-block; padding: 15px 30px; background-color: #ffe4e6; color: #000000; font-size: 28px; font-weight: bold; letter-spacing: 2px; border-radius: 8px;">
         ${otp}
       </div>
     </div>
 
-    <p style="font-size: 16px; color: #555555;">Mã này có hiệu lực trong vòng <strong>1 phút</strong>. Vui lòng <strong>không chia sẻ</strong> mã này với bất kỳ ai.</p>
+    <p style="font-size: 16px; color: #555555;">Mã này có hiệu lực trong vòng <strong>${expiresTime} phút</strong>. Vui lòng <strong>không chia sẻ</strong> mã này với bất kỳ ai.</p>
     <p style="font-size: 14px; color: #999999;">Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
 
     <hr style="margin: 40px 0; border: none; border-top: 1px solid #eeeeee;" />

@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
   );
   await sendEmail(email, subject, html);
 
-  const otpExpiry = new Date().getTime() + 60000;
+  const otpExpiry =
+    new Date().getTime() + Number(process.env.OTP_EXPIRED_TIME!) * 60000;
 
   return NextResponse.json(
     makeResponse({

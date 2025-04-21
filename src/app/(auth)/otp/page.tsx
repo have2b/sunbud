@@ -1,5 +1,9 @@
 import OTPForm from "@/components/client/OTPForm";
 
 export default async function OTPPage() {
-  return <OTPForm />;
+  return (
+    <div className="w-full max-w-md">
+      <OTPForm />
+    </div>
+  );
 }

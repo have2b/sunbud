@@ -15,23 +15,23 @@ import { loginSchema, LoginSchema } from "@/validations/auth.validation";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowRightIcon, DoorClosedIcon, LockKeyhole } from "lucide-react";
-import { motion } from "motion/react";
+import { Lock, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 const LoginForm = () => {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-
-  // Simulate client-side loading delay
-  useEffect(() => {
-    const timer = setTimeout(() => {}, 10000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const form = useForm<LoginSchema>({
     resolver: valibotResolver(loginSchema),
@@ -64,135 +64,100 @@ const LoginForm = () => {
   }
 
   return (
-    <section className="flex h-full w-full items-center justify-center">
-      <div className="w-full max-w-lg rounded-2xl px-4 shadow-2xl md:px-0">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-6 p-8"
-        >
-          {/* Header Section */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2">
-              <LockKeyhole className="text-primary size-6 md:size-8" />
-              <p className="text-primary text-2xl font-black uppercase md:text-4xl">
-                Đăng nhập
-              </p>
-            </div>
-          </div>
-
-          {/* Form Section */}
-          <Form {...form}>
-            <motion.form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-full space-y-2 rounded-2xl bg-white/80"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+    <Card className="w-full border-rose-100 p-4 shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-center text-2xl font-bold text-rose-600">
+          Chào mừng quay trở lại
+        </CardTitle>
+        <CardDescription className="text-center">
+          Điền thông tin của bạn để đăng nhập vào trang web
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="emailOrUsername"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-gray-600">
+                    Email hoặc tên đăng nhập
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <User className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
+                      <Input
+                        placeholder="Email hoặc tên đăng nhập của bạn..."
+                        {...field}
+                        className="pl-10"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-gray-600">
+                    Mật khẩu
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
+                      <Input
+                        placeholder="Mật khẩu của bạn..."
+                        {...field}
+                        type="password"
+                        className="pl-10"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-full bg-rose-600 hover:bg-rose-700"
+              disabled={loginMutation.isPending}
             >
-              {/* Email/Username Field */}
-              <FormField
-                control={form.control}
-                name="emailOrUsername"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-600">
-                      Email hoặc tên đăng nhập
-                    </FormLabel>
-                    <FormControl>
-                      <motion.div whileHover={{ scale: 1.02 }}>
-                        <Input
-                          placeholder="Email hoặc tên đăng nhập của bạn..."
-                          {...field}
-                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
-                        />
-                      </motion.div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Password Field */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-600">
-                      Mật khẩu
-                    </FormLabel>
-                    <FormControl>
-                      <motion.div whileHover={{ scale: 1.02 }}>
-                        <Input
-                          placeholder="Mật khẩu của bạn..."
-                          {...field}
-                          type="password"
-                          className="rounded-lg border-2 border-gray-200 px-4 py-3 transition-all"
-                        />
-                      </motion.div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Submit Button */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="pt-4"
-              >
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/85 w-full gap-2 rounded-lg py-3 text-base font-semibold text-white shadow-lg transition-all hover:cursor-pointer"
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
-                  <ArrowRightIcon className="h-4 w-4" />
-                </Button>
-              </motion.div>
-
-              {/* Additional Links */}
-              <motion.div
-                className="flex items-center justify-between pt-4 text-center text-sm text-gray-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Link
-                  href="/register"
-                  className="text-primary hover:text-secondary font-semibold transition-colors"
-                >
-                  Đăng ký
-                </Link>
-                <Link
-                  href="/forgot-password"
-                  className="text-primary hover:text-secondary font-semibold transition-colors"
-                >
-                  Quên mật khẩu?
-                </Link>
-              </motion.div>
-              <motion.div
-                className="w-full text-center text-sm text-gray-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Link
-                  href="/"
-                  className="hover:text-secondary flex items-center justify-center gap-2 font-semibold transition-colors"
-                >
-                  <DoorClosedIcon />
-                  <span>Trở về trang chủ</span>
-                </Link>
-              </motion.div>
-            </motion.form>
-          </Form>
-        </motion.div>
-      </div>
-    </section>
+              {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="text-muted-foreground text-center text-sm">
+          <Link
+            href="/forgot-password"
+            className="text-rose-600 hover:underline"
+          >
+            <span>Quên mật khẩu?</span>
+          </Link>
+        </div>
+        <div className="text-center text-sm">
+          <span>{"Không có tài khoản? "}</span>
+          <Link
+            href="/register"
+            className="font-medium text-rose-600 hover:underline"
+          >
+            Đăng ký
+          </Link>
+        </div>
+        <Button
+          variant="outline"
+          className="mt-2 w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-black"
+          onClick={() => router.push("/")}
+        >
+          <span>Trở về trang chủ</span>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

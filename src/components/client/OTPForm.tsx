@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
@@ -8,10 +9,17 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
-import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 const OTPForm = () => {
   const router = useRouter();
@@ -97,54 +105,70 @@ const OTPForm = () => {
   });
 
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mx-auto flex w-full max-w-xs flex-col items-center rounded-lg bg-white p-4 shadow-md sm:max-w-md sm:p-6"
-    >
-      <h2 className="mb-4 text-2xl font-semibold text-gray-800">
-        Xác nhận mã OTP
-      </h2>
-      <InputOTP
-        value={otp}
-        onChange={(value) => setOtp(value)}
-        maxLength={6}
-        pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-        className="justify-center"
-      >
-        <InputOTPGroup className="space-x-2 sm:space-x-4">
-          <InputOTPSlot index={0} />
-          <InputOTPSlot index={1} />
-          <InputOTPSlot index={2} />
-          <InputOTPSlot index={3} />
-          <InputOTPSlot index={4} />
-          <InputOTPSlot index={5} />
-        </InputOTPGroup>
-      </InputOTP>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        type="submit"
-        className="mt-6 w-full rounded-lg bg-indigo-600 py-2 text-white transition-all hover:bg-indigo-700"
-        disabled={verifyOtpMutation.isPending}
-      >
-        {verifyOtpMutation.isPending ? "Đang xác thực..." : "Xác thực"}
-      </motion.button>
-      <button
-        type="button"
-        disabled={secondsLeft > 0 || resendOtpMutation.isPending}
-        onClick={() => resendOtpMutation.mutate()}
-        className="mt-4 text-sm text-blue-600 hover:underline disabled:text-gray-400"
-      >
-        {resendOtpMutation.isPending
-          ? "Đang gửi lại..."
-          : secondsLeft > 0
-            ? `Gửi lại OTP (${secondsLeft}s)`
-            : "Gửi lại OTP"}
-      </button>
-    </motion.form>
+    <Card className="w-full border-rose-100 p-4 shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-center text-2xl font-bold text-rose-600">
+          Xác nhận mã OTP
+        </CardTitle>
+        <CardDescription className="text-center">
+          Nhập mã OTP 6 ký tự đã được gửi đến email của bạn
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center gap-6"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative">
+              <InputOTP
+                value={otp}
+                onChange={(value) => setOtp(value)}
+                maxLength={6}
+                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+              >
+                <InputOTPGroup className="space-x-2">
+                  {[...Array(6)].map((_, index) => (
+                    <InputOTPSlot key={index} index={index} />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-rose-600 hover:bg-rose-700"
+            disabled={verifyOtpMutation.isPending}
+          >
+            {verifyOtpMutation.isPending ? "Đang xác thực..." : "Xác thực"}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="text-center text-sm">
+          <Button
+            variant="link"
+            className="h-auto p-0 text-rose-600 hover:underline"
+            disabled={secondsLeft > 0 || resendOtpMutation.isPending}
+            onClick={() => resendOtpMutation.mutate()}
+          >
+            {resendOtpMutation.isPending
+              ? "Đang gửi lại..."
+              : secondsLeft > 0
+                ? `Gửi lại OTP (${secondsLeft}s)`
+                : "Gửi lại OTP"}
+          </Button>
+        </div>
+        <Button
+          variant="outline"
+          className="mt-2 w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-black"
+          onClick={() => router.push("/")}
+        >
+          Trở về trang chủ
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
