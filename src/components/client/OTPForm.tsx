@@ -9,6 +9,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -115,9 +116,12 @@ const OTPForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form
+        <motion.form
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-6"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
         >
           <div className="flex flex-col items-center gap-2">
             <div className="relative">
@@ -143,7 +147,7 @@ const OTPForm = () => {
           >
             {verifyOtpMutation.isPending ? "Đang xác thực..." : "Xác thực"}
           </Button>
-        </form>
+        </motion.form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-center text-sm">

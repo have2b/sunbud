@@ -16,6 +16,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { Lock, User } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -75,7 +76,13 @@ const LoginForm = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <motion.form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
             <FormField
               control={form.control}
               name="emailOrUsername"
@@ -128,7 +135,7 @@ const LoginForm = () => {
             >
               {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
-          </form>
+          </motion.form>
         </Form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
