@@ -49,22 +49,24 @@ const Header = () => {
 
         {/* Authentication links */}
         {user ? (
-          <>
+          <div className="flex items-center gap-2">
             <Button
               variant={"link"}
-              onClick={() => router.push("/profile")}
-              className="text-sm text-white"
+              onClick={() =>
+                router.push(user.role === "ADMIN" ? "/admin" : "/profile")
+              }
+              className="px-0 text-sm text-white"
             >
               Xin chào, {user.fullName}
             </Button>
             <Button
               variant={"link"}
               onClick={handleLogout}
-              className="text-sm text-white"
+              className="px-0 text-sm text-white"
             >
               ĐĂNG XUẤT
             </Button>
-          </>
+          </div>
         ) : (
           <>
             <Link href="/login" className="text-sm">
