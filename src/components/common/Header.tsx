@@ -12,9 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import axios from "axios";
 import { LogOutIcon, Menu, ShoppingCartIcon, UserIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const mainNavItems = [
   { label: "Trang chủ", href: "/" },
@@ -28,21 +30,32 @@ const avatarDropdownItems = [
   { label: "Đơn hàng", href: "/orders", icon: <ShoppingCartIcon /> },
   {
     label: "Đăng xuất",
-    href: "/sign-out",
+    href: "/logout",
     icon: <LogOutIcon className="text-red-500" />,
   },
-];
+] as const;
 
 const Header = () => {
   const user = useAuthStore((state) => state.user);
   const expiresAt = useAuthStore((state) => state.expiresAt);
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const router = useRouter();
 
   useEffect(() => {
     if (expiresAt && expiresAt < Date.now()) {
       clearAuth();
     }
   }, [expiresAt, clearAuth]);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("/api/logout");
+    } catch (error) {
+      console.error(error);
+    }
+    clearAuth();
+    router.push("/login");
+  };
 
   return (
     <motion.header
@@ -112,16 +125,25 @@ const Header = () => {
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent sideOffset={4} align="end">
-                    {avatarDropdownItems.map(({ label, href, icon }) => (
-                      <DropdownMenuItem key={label}>
-                        <Link href={href}>
+                    {avatarDropdownItems.map(({ label, href, icon }) =>
+                      href === "/logout" ? (
+                        <DropdownMenuItem key={label} onClick={handleLogout}>
                           <div className="flex items-center gap-2">
                             {icon}
                             {label}
                           </div>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem key={label}>
+                          <Link href={href}>
+                            <div className="flex items-center gap-2">
+                              {icon}
+                              {label}
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      ),
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
@@ -163,16 +185,25 @@ const Header = () => {
 
                   {user ? (
                     <>
-                      {avatarDropdownItems.map(({ label, href, icon }) => (
-                        <DropdownMenuItem key={label}>
-                          <Link href={href}>
+                      {avatarDropdownItems.map(({ label, href, icon }) =>
+                        href === "/logout" ? (
+                          <DropdownMenuItem key={label} onClick={handleLogout}>
                             <div className="flex items-center gap-2">
                               {icon}
                               {label}
                             </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem key={label}>
+                            <Link href={href}>
+                              <div className="flex items-center gap-2">
+                                {icon}
+                                {label}
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        ),
+                      )}
                     </>
                   ) : (
                     <DropdownMenuItem>
