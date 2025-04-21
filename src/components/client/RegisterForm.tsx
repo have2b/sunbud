@@ -65,7 +65,9 @@ const RegisterForm = () => {
       const response = await axios.post("/api/register", data);
       return response.data;
     },
-    onSuccess: async (data) => {
+    onSuccess: (data, variables) => {
+      // Persist email for OTP resend
+      localStorage.setItem("userEmail", variables.email);
       toast.success(data.message);
       localStorage.setItem("otpExpiry", data.data.otpExpiry.toString());
       router.push("/otp");

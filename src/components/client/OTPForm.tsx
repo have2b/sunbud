@@ -50,13 +50,6 @@ const OTPForm = () => {
     };
   }, []);
 
-  useEffect(() => {
-    startCountdown(secondsLeft);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [secondsLeft]);
-
   const verifyOtpMutation = useMutation({
     mutationFn: async (data: { otp: string }) => {
       const response = await axios.post("/api/verify-otp", data);
