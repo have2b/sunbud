@@ -1,10 +1,35 @@
 "use client";
-
+import { useAuthStore } from "@/hooks/useAuthStore";
+import axios from "axios";
 import { ShoppingCartIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Button } from "../ui/button";
 
 const Header = () => {
+  const user = useAuthStore((state) => state.user);
+  const expiresAt = useAuthStore((state) => state.expiresAt);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (expiresAt && expiresAt < Date.now()) {
+      clearAuth();
+    }
+  }, [expiresAt, clearAuth]);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("/api/logout");
+    } catch (error) {
+      console.error(error);
+    }
+    clearAuth();
+    router.push("/login");
+  };
+
   return (
     <motion.header
       initial={{ opacity: 0 }}
@@ -21,13 +46,36 @@ const Header = () => {
           Hotline:
           <span className="ms-1 font-semibold text-red-500">0559.901.869</span>
         </p>
-        {/* For login */}
-        <Link href={"/login"} className="text-sm">
-          ĐĂNG NHẬP
-        </Link>
-        <Link href={"/register"} className="text-sm">
-          ĐĂNG KÝ
-        </Link>
+
+        {/* Authentication links */}
+        {user ? (
+          <>
+            <Button
+              variant={"link"}
+              onClick={() => router.push("/profile")}
+              className="text-sm text-white"
+            >
+              Xin chào, {user.fullName}
+            </Button>
+            <Button
+              variant={"link"}
+              onClick={handleLogout}
+              className="text-sm text-white"
+            >
+              ĐĂNG XUẤT
+            </Button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className="text-sm">
+              ĐĂNG NHẬP
+            </Link>
+            <Link href="/register" className="text-sm">
+              ĐĂNG KÝ
+            </Link>
+          </>
+        )}
+
         {/* For cart */}
         {/* TODO: Cart function */}
         <div className="relative">
