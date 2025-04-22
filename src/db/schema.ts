@@ -2,6 +2,7 @@ import {
   boolean,
   pgEnum,
   pgTable,
+  serial,
   text,
   timestamp,
   uuid,
@@ -50,3 +51,14 @@ export const users = pgTable("users", {
 });
 
 export type User = typeof users.$inferSelect;
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isPublish: boolean("is_publish").default(false).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export type Category = typeof categories.$inferSelect;
