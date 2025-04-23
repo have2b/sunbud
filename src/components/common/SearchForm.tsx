@@ -32,7 +32,7 @@ const SearchForm = () => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="ml-4 flex w-56 items-center gap-2"
+          className="flex w-56 items-center gap-2"
         >
           <FormField
             control={form.control}
@@ -45,7 +45,7 @@ const SearchForm = () => {
                       type="text"
                       placeholder="Tìm kiếm..."
                       {...field}
-                      className="rounded-full pr-10"
+                      className="rounded-full bg-white pr-10"
                     />
                     <div className="absolute inset-y-0 right-3 flex items-center">
                       <Search

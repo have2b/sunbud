@@ -1,4 +1,11 @@
-import { LogOutIcon, ShoppingCartIcon, UserIcon } from "lucide-react";
+import {
+  BlocksIcon,
+  LayoutDashboardIcon,
+  LogOutIcon,
+  PackageIcon,
+  ShoppingCartIcon,
+  UserIcon,
+} from "lucide-react";
 
 export const passwordRequirements = [
   { label: "Tối thiểu 8 ký tự", isValid: (pw: string) => pw.length >= 8 },
@@ -33,7 +40,39 @@ export const avatarDropdownItems = [
   },
 ] as const;
 
+export const adminDropdownItems = [
+  { label: "Thông tin cá nhân", href: "/account", icon: <UserIcon /> },
+  {
+    label: "Đăng xuất",
+    href: "/logout",
+    icon: <LogOutIcon className="text-red-500" />,
+  },
+];
+
 export const mainNavItems = [
   { label: "Trang chủ", href: "/" },
   { label: "Sản phẩm", href: "/shop" },
+];
+
+export const adminSidebarItems = [
+  {
+    title: "Bảng điều khiển",
+    url: "/admin/dashboard",
+    icon: LayoutDashboardIcon,
+  },
+  {
+    title: "Danh mục",
+    url: "/admin/category",
+    icon: BlocksIcon,
+  },
+  {
+    title: "Sản phẩm",
+    url: "/admin/product",
+    icon: PackageIcon,
+  },
+  {
+    title: "Tài khoản",
+    url: "/admin/account",
+    icon: UserIcon,
+  },
 ];
