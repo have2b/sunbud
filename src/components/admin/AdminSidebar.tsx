@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { adminDropdownItems, adminSidebarItems } from "@/constants";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { cn } from "@/lib/utils";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -73,7 +74,10 @@ function AdminAvatarDropdown() {
           <DropdownMenuItem
             asChild
             key={item.label}
-            className={item.label === "Đăng xuất" ? "text-red-500" : undefined}
+            className={cn(
+              item.label === "Đăng xuất" ? "text-red-500" : undefined,
+              "cursor-pointer",
+            )}
           >
             <Link href={item.href} className="flex w-full items-center gap-2">
               {item.icon}
