@@ -22,10 +22,10 @@ import {
 } from "@/components/ui/sidebar";
 import { adminDropdownItems, adminSidebarItems } from "@/constants";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { cn } from "@/lib/utils";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import SearchForm from "../common/SearchForm";
 import { Button } from "../ui/button";
 
@@ -74,10 +74,7 @@ function AdminAvatarDropdown() {
           <DropdownMenuItem
             asChild
             key={item.label}
-            className={cn(
-              item.label === "Đăng xuất" ? "text-red-500" : undefined,
-              "cursor-pointer",
-            )}
+            className={item.label === "Đăng xuất" ? "text-red-500" : undefined}
           >
             <Link href={item.href} className="flex w-full items-center gap-2">
               {item.icon}
@@ -92,6 +89,16 @@ function AdminAvatarDropdown() {
 
 export function AdminSidebar() {
   const { state } = useSidebar();
+  const pathname = usePathname();
+
+  const isRouteActive = (url: string) => {
+    if (pathname === url) return true;
+
+    if (url !== "/" && pathname.startsWith(url)) return true;
+
+    return false;
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r-2 border-rose-400">
       <SidebarHeader className="border-b-[1px] border-rose-400 bg-rose-100">
@@ -133,16 +140,25 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminSidebarItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="hover:bg-rose-200">
-                    <Link href={item.url}>
-                      <item.icon className="shrink-0" />
-                      <span className="text-base">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {adminSidebarItems.map((item) => {
+                const isActive = isRouteActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className={`hover:bg-rose-200 ${isActive ? "bg-rose-300 font-medium text-rose-800" : ""}`}
+                    >
+                      <Link href={item.url}>
+                        <item.icon
+                          className={`shrink-0 ${isActive ? "text-rose-800" : ""}`}
+                        />
+                        <span className="text-base">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

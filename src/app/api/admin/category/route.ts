@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { name, description } = await request.json();
+  const { name, description, isPublish } = await request.json();
   if (!name) {
     return NextResponse.json(
       makeResponse({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   }
   const inserted = await db
     .insert(categories)
-    .values({ name, description })
+    .values({ name, description, isPublish })
     .returning();
   const created = inserted[0];
   return NextResponse.json(
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const { id, name, description } = await request.json();
+  const { id, name, description, isPublish } = await request.json();
   if (!id || !name) {
     return NextResponse.json(
       makeResponse({
@@ -83,7 +83,7 @@ export async function PUT(request: NextRequest) {
   }
   const updated = await db
     .update(categories)
-    .set({ name, description })
+    .set({ name, description, isPublish })
     .where(eq(categories.id, id))
     .returning();
   if (updated.length === 0) {

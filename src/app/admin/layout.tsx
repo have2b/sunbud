@@ -15,7 +15,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <AdminSidebar />
-      <main className="h-full w-full p-4">{children}</main>
+      <main className="h-screen w-full bg-rose-50 p-4">{children}</main>
     </SidebarProvider>
   );
 }
