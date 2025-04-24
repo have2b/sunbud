@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   const { id } = await request.json();
-  console.log(id);
   if (!id) {
     return NextResponse.json(
       makeResponse({
