@@ -9,7 +9,7 @@ export const insertCategorySchema = v.object({
 export type InsertCategorySchema = v.InferOutput<typeof insertCategorySchema>;
 
 export const updateCategorySchema = v.object({
-  id: v.number(),
+  id: v.string(),
   name: v.pipe(v.string(), v.minLength(1, "Tên danh mục không được để trống")),
   description: v.string(),
 });
