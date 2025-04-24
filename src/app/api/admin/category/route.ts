@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   // Handle single category request
-  const idParam = searchParams.get("id");
+  const idParam = Number(searchParams.get("id"));
   if (idParam) {
     const category = await db.query.categories.findFirst({
       where: eq(categories.id, idParam),

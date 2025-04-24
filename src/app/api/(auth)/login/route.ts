@@ -37,7 +37,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const token = await generateJWT({ userId: user.id, role: user.role });
+  const token = await generateJWT({
+    userId: user.id.toString(),
+    role: user.role,
+  });
 
   const response = NextResponse.json(
     makeResponse({

@@ -4,7 +4,7 @@ CREATE TYPE "public"."payment_status" AS ENUM('PENDING', 'COMPLETED', 'FAILED');
 CREATE TYPE "public"."role" AS ENUM('USER', 'ADMIN', 'SHIPPER');--> statement-breakpoint
 CREATE TYPE "public"."shipping_status" AS ENUM('PREPARING', 'SHIPPED', 'DELIVERED');--> statement-breakpoint
 CREATE TABLE "categories" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"description" text,
 	"is_publish" boolean DEFAULT false NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE "categories" (
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"username" varchar(255) NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"password_hash" text NOT NULL,

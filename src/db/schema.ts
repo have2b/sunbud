@@ -2,9 +2,9 @@ import {
   boolean,
   pgEnum,
   pgTable,
+  serial,
   text,
   timestamp,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -34,7 +34,7 @@ export const shippingStatusEnum = pgEnum("shipping_status", [
 export const roleEnum = pgEnum("role", ["USER", "ADMIN", "SHIPPER"]);
 
 export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: serial("id").primaryKey(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: text("password_hash").notNull(),
@@ -52,7 +52,7 @@ export const users = pgTable("users", {
 export type User = typeof users.$inferSelect;
 
 export const categories = pgTable("categories", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   isPublish: boolean("is_publish").default(false).notNull(),
