@@ -1,7 +1,7 @@
 import { db } from "@/db/db";
 import { categories } from "@/db/schema";
 import { makeResponse } from "@/utils/make-response";
-import { eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
       { status: 200 },
     );
   }
-  const allCategories = await db.query.categories.findMany();
+  const allCategories = await db.query.categories.findMany({
+    orderBy: [desc(categories.isPublish), asc(categories.name)],
+  });
   return NextResponse.json(
     makeResponse({
       status: 200,
@@ -115,7 +117,8 @@ export async function DELETE(request: NextRequest) {
     );
   }
   const deleted = await db
-    .delete(categories)
+    .update(categories)
+    .set({ isPublish: false })
     .where(eq(categories.id, id))
     .returning();
   if (deleted.length === 0) {
@@ -129,7 +132,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
   return NextResponse.json(
-    makeResponse({ status: 200, data: {}, message: "Xóa danh mục thành công" }),
+    makeResponse({ status: 200, data: {}, message: "Ẩn danh mục thành công" }),
     { status: 200 },
   );
 }

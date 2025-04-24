@@ -1,4 +1,4 @@
-import { JOSEError } from "jose/errors";
+import { JOSEError, JWTExpired } from "jose/errors";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJWT } from "./lib/utils";
 
@@ -19,6 +19,9 @@ export async function middleware(request: NextRequest) {
     }
     return NextResponse.next();
   } catch (error) {
+    if (error instanceof JWTExpired) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     if (error instanceof JOSEError) {
       console.error("JWT verification failed: ", error.code);
     } else {

@@ -1,27 +1,21 @@
-"use client";
+import CategoryDatatable from "@/components/admin/category/CategoryDatatable";
 import InsertCategoryForm from "@/components/admin/category/InsertCategoryForm";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
 
-const AdminCategoryPage = () => {
-  const [open, setOpen] = useState(false);
+export default function AdminCategoryPage() {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>Open</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="mb-2 text-lg">Thêm danh mục mới</DialogTitle>
-          <InsertCategoryForm onSuccess={() => setOpen(false)} />
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  );
-};
+    <div className="p-4 sm:p-6">
+      {/* Header Section */}
+      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Quản lý Danh mục
+        </h1>
+        <InsertCategoryForm />
+      </div>
 
-export default AdminCategoryPage;
+      {/* Data Table Section */}
+      <div className="rounded-lg border shadow-sm">
+        <CategoryDatatable />
+      </div>
+    </div>
+  );
+}
