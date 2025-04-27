@@ -72,7 +72,7 @@ export const adminSidebarItems = [
   },
   {
     title: "Tài khoản",
-    url: "/admin/account",
+    url: "/admin/user",
     icon: UserIcon,
   },
 ];
