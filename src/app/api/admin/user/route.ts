@@ -78,89 +78,150 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { username, email, password, firstName, lastName, phone, avatarUrl } =
-    await request.json();
-  if (!username || !email || !password || !firstName || !lastName || !phone) {
+  try {
+    const { username, email, password, firstName, lastName, phone, avatarUrl } =
+      await request.json();
+    if (!username || !email || !password || !firstName || !lastName || !phone) {
+      return NextResponse.json(
+        makeResponse({
+          status: 400,
+          data: {},
+          message:
+            "username, email, password, firstName, lastName, phone là bắt buộc",
+        }),
+        { status: 400 },
+      );
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    const otp = randomUUID().slice(0, 6);
+
+    const inserted = await db
+      .insert(users)
+      .values({
+        username,
+        email,
+        passwordHash,
+        firstName,
+        lastName,
+        phone,
+        avatarUrl: avatarUrl || null,
+        otp,
+        role: "USER",
+      })
+      .returning();
+    const created = inserted[0];
+
     return NextResponse.json(
       makeResponse({
-        status: 400,
-        data: {},
-        message:
-          "username, email, password, firstName, lastName, phone là bắt buộc",
+        status: 201,
+        data: omit(created, ["passwordHash", "otp"]),
+        message: "Tạo người dùng thành công",
       }),
-      { status: 400 },
+      { status: 201 },
+    );
+  } catch (error: unknown) {
+    // Narrow unknown to database error
+    const dbError = error as { code?: string; detail?: string };
+    if (dbError.code === "23505") {
+      const detail = dbError.detail as string;
+      const match = detail.match(/\(([^)]+)\)=/);
+      const key = match?.[1] ?? "";
+      const fieldMessageMap: Record<string, string> = {
+        username: "Tên người dùng đã tồn tại",
+        email: "Email đã tồn tại",
+        phone: "Số điện thoại đã tồn tại",
+      };
+      const message = fieldMessageMap[key] || "Dữ liệu đã được sử dụng";
+      const errors: Record<string, string> = {};
+      if (key) errors[key] = message;
+      return NextResponse.json(
+        makeResponse({ status: 409, data: { errors }, message }),
+        { status: 409 },
+      );
+    }
+    console.error("POST /api/admin/user error", error);
+    return NextResponse.json(
+      makeResponse({
+        status: 500,
+        data: {},
+        message: "Lỗi máy chủ. Vui lòng thử lại sau",
+      }),
+      { status: 500 },
     );
   }
-  const passwordHash = await bcrypt.hash(password, 10);
-  const otp = randomUUID().slice(0, 6);
+}
 
-  const inserted = await db
-    .insert(users)
-    .values({
-      username,
+export async function PUT(request: NextRequest) {
+  try {
+    const { id, email, password, firstName, lastName, phone, avatarUrl } =
+      await request.json();
+    if (!id) {
+      return NextResponse.json(
+        makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
+        { status: 400 },
+      );
+    }
+    const dataToUpdate: Partial<User> = {
       email,
-      passwordHash,
       firstName,
       lastName,
       phone,
       avatarUrl: avatarUrl || null,
-      otp,
-      role: "USER",
-    })
-    .returning();
-  const created = inserted[0];
+    };
+    if (password) dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
 
-  return NextResponse.json(
-    makeResponse({
-      status: 201,
-      data: omit(created, ["passwordHash", "otp"]),
-      message: "Tạo người dùng thành công",
-    }),
-    { status: 201 },
-  );
-}
-
-export async function PUT(request: NextRequest) {
-  const { id, email, password, firstName, lastName, phone, avatarUrl } =
-    await request.json();
-  if (!id) {
-    return NextResponse.json(
-      makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
-      { status: 400 },
-    );
-  }
-  const dataToUpdate: Partial<User> = {
-    email,
-    firstName,
-    lastName,
-    phone,
-    avatarUrl: avatarUrl || null,
-  };
-  if (password) dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
-
-  const updated = await db
-    .update(users)
-    .set(dataToUpdate)
-    .where(eq(users.id, id))
-    .returning();
-  if (updated.length === 0) {
+    const updated = await db
+      .update(users)
+      .set(dataToUpdate)
+      .where(eq(users.id, id))
+      .returning();
+    if (updated.length === 0) {
+      return NextResponse.json(
+        makeResponse({
+          status: 404,
+          data: {},
+          message: "Người dùng không tồn tại",
+        }),
+        { status: 404 },
+      );
+    }
     return NextResponse.json(
       makeResponse({
-        status: 404,
-        data: {},
-        message: "Người dùng không tồn tại",
+        status: 200,
+        data: omit(updated[0], ["passwordHash", "otp"]),
+        message: "Cập nhật người dùng thành công",
       }),
-      { status: 404 },
+      { status: 200 },
+    );
+  } catch (error: unknown) {
+    const dbError = error as { code?: string; detail?: string };
+    if (dbError.code === "23505") {
+      const detail = dbError.detail as string;
+      const match = detail.match(/\(([^)]+)\)=/);
+      const key = match?.[1] ?? "";
+      const fieldMessageMap: Record<string, string> = {
+        username: "Tên người dùng đã tồn tại",
+        email: "Email đã tồn tại",
+        phone: "Số điện thoại đã tồn tại",
+      };
+      const message = fieldMessageMap[key] || "Dữ liệu đã được sử dụng";
+      const errors: Record<string, string> = {};
+      if (key) errors[key] = message;
+      return NextResponse.json(
+        makeResponse({ status: 409, data: { errors }, message }),
+        { status: 409 },
+      );
+    }
+    console.error("PUT /api/admin/user error", error);
+    return NextResponse.json(
+      makeResponse({
+        status: 500,
+        data: {},
+        message: "Lỗi máy chủ. Vui lòng thử lại sau",
+      }),
+      { status: 500 },
     );
   }
-  return NextResponse.json(
-    makeResponse({
-      status: 200,
-      data: omit(updated[0], ["passwordHash", "otp"]),
-      message: "Cập nhật người dùng thành công",
-    }),
-    { status: 200 },
-  );
 }
 
 export async function DELETE(request: NextRequest) {

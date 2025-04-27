@@ -78,8 +78,16 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ user, onClose }) => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
-      const msg = error.response?.data?.message || error.message;
-      toast.error(msg);
+      // Handle unique constraint errors
+      if (error.response?.status === 409 && error.response.data?.data?.errors) {
+        const fieldErrors = error.response.data.data.errors as Record<string, string>;
+        Object.entries(fieldErrors).forEach(([field, message]) => {
+          form.setError(field as keyof UpdateUserSchema, { type: 'server', message });
+        });
+      } else {
+        const msg = error.response?.data?.message || error.message;
+        toast.error(msg);
+      }
     },
   });
 
