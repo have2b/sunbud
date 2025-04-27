@@ -1,0 +1,61 @@
+"use client";
+import { GenericDataTable } from "@/components/common/GenericDatatable";
+import { Product } from "@/db/schema";
+import { UpdateProductSchema } from "@/validations/product.validation";
+import { useState } from "react";
+import PublishProductForm from "./PublishProductForm";
+import UpdateProductForm from "./UpdateProductForm";
+import { createProductColumns } from "./product.columns";
+import { productFilterFields } from "./product.filter";
+
+export default function ProductDatatable() {
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [publishProduct, setPublishProduct] = useState<Product | null>(null);
+
+  const transformToUpdateSchema = (product: Product): UpdateProductSchema => {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description || "", // Convert null to empty string
+      price:
+        typeof product.price === "string"
+          ? parseFloat(product.price)
+          : Number(product.price), // Convert to number
+      quantity: product.quantity,
+      imageUrl: product.imageUrl || undefined, // Convert null to undefined
+      categoryId: product.categoryId || 0, // Convert null to a default value (0)
+    };
+  };
+
+  return (
+    <>
+      {editProduct && (
+        <UpdateProductForm
+          product={transformToUpdateSchema(editProduct)}
+          onClose={() => setEditProduct(null)}
+        />
+      )}
+      {publishProduct && (
+        <PublishProductForm
+          product={publishProduct}
+          onClose={() => setPublishProduct(null)}
+        />
+      )}
+
+      <GenericDataTable
+        queryKey="products"
+        apiPath="/api/admin/product"
+        columns={createProductColumns(
+          (product: Product) => setEditProduct(product),
+          (product: Product) => setPublishProduct(product),
+        )}
+        filterFields={productFilterFields}
+        searchableFields={{
+          placeholder: "Tìm kiếm theo tên...",
+          onSearch: (input) => [{ field: "name", value: input }],
+        }}
+        initialPageSize={10}
+      />
+    </>
+  );
+}
