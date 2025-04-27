@@ -15,11 +15,22 @@ export const productFilterFields: FilterField[] = [
     key: "price",
     label: "Giá",
     type: "number",
+    numberOptions: {
+      minLabel: "Giá từ",
+      maxLabel: "Giá đến",
+      step: 1000,
+      unit: "₫"
+    }
   },
   {
     key: "quantity",
     label: "Số lượng",
     type: "number",
+    numberOptions: {
+      minLabel: "Từ",
+      maxLabel: "Đến",
+      step: 1
+    }
   },
   {
     key: "categoryId",

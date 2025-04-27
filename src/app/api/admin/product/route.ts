@@ -40,6 +40,10 @@ export async function GET(request: NextRequest) {
   const description = searchParams.get("description");
   const isPublish = searchParams.get("isPublish");
   const categoryId = searchParams.get("categoryId");
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const minQuantity = searchParams.get("minQuantity");
+  const maxQuantity = searchParams.get("maxQuantity");
 
   const conditions = [];
 
@@ -48,6 +52,14 @@ export async function GET(request: NextRequest) {
     conditions.push(ilike(products.description, `%${description}%`));
   if (isPublish) conditions.push(eq(products.isPublish, isPublish === "true"));
   if (categoryId) conditions.push(eq(products.categoryId, Number(categoryId)));
+  if (minPrice)
+    conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${minPrice}`);
+  if (maxPrice)
+    conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${maxPrice}`);
+  if (minQuantity)
+    conditions.push(sql`${products.quantity} >= ${Number(minQuantity)}`);
+  if (maxQuantity)
+    conditions.push(sql`${products.quantity} <= ${Number(maxQuantity)}`);
 
   const totalResult = await db
     .select({ count: sql<number>`count(*)` })

@@ -47,6 +47,7 @@ interface GenericDataTableProps<T> {
     onSearch: (input: string) => FilterCondition[];
   };
   initialPageSize?: number;
+  meta?: Record<string, unknown>; // Add meta property for additional data
 }
 
 export function GenericDataTable<T>({
@@ -56,6 +57,7 @@ export function GenericDataTable<T>({
   filterFields,
   searchableFields,
   initialPageSize = 10,
+  meta,
 }: GenericDataTableProps<T>) {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -81,10 +83,14 @@ export function GenericDataTable<T>({
         const fieldConfig = filterFields.find((f) => f.key === condition.field);
 
         if (fieldConfig?.type === "number") {
+          // Use custom parameter names if available, otherwise fall back to field_min/field_max format
+          const minParamName = condition.paramNames?.minParam || `${condition.field}_min`;
+          const maxParamName = condition.paramNames?.maxParam || `${condition.field}_max`;
+          
           if (condition.min !== undefined)
-            params.set(`${condition.field}_min`, condition.min.toString());
+            params.set(minParamName, condition.min.toString());
           if (condition.max !== undefined)
-            params.set(`${condition.field}_max`, condition.max.toString());
+            params.set(maxParamName, condition.max.toString());
         } else {
           if (condition.value !== undefined)
             params.set(condition.field, condition.value.toString());
@@ -122,6 +128,7 @@ export function GenericDataTable<T>({
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: Math.ceil((data?.total || 0) / pagination.pageSize),
+    meta, // Pass meta data to the table instance
   });
 
   if (isLoading) return <DataTableLoading />;

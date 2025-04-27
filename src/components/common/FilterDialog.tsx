@@ -22,6 +22,13 @@ export type FilterField = {
   key: string;
   label: string;
   type: "string" | "boolean" | "number";
+  // Additional options for number fields
+  numberOptions?: {
+    minLabel?: string;
+    maxLabel?: string;
+    step?: number;
+    unit?: string; // For display purposes (e.g., "$", "kg")
+  };
 };
 
 export type FilterCondition = {
@@ -29,6 +36,11 @@ export type FilterCondition = {
   value?: string | boolean;
   min?: number;
   max?: number;
+  // For API param mapping
+  paramNames?: {
+    minParam?: string; // Custom parameter name for min value (e.g., "minPrice", "minQuantity")
+    maxParam?: string; // Custom parameter name for max value (e.g., "maxPrice", "maxQuantity")
+  };
 };
 
 interface FilterDialogProps {
@@ -81,7 +93,26 @@ export function FilterDialog({
       return condition.min !== undefined || condition.max !== undefined;
     });
 
-    onApply(validConditions);
+    // Map field keys to API parameter names if needed
+    const mappedConditions = validConditions.map(condition => {
+      const field = fields.find(f => f.key === condition.field);
+      
+      // For number fields, check if we need to map the parameter names
+      if (field?.type === "number") {
+        // Default to using field.key with min/max prefix if no custom param names
+        const minParam = condition.paramNames?.minParam || `min${field.key.charAt(0).toUpperCase()}${field.key.slice(1)}`;
+        const maxParam = condition.paramNames?.maxParam || `max${field.key.charAt(0).toUpperCase()}${field.key.slice(1)}`;
+        
+        return {
+          ...condition,
+          paramNames: { minParam, maxParam }
+        };
+      }
+      
+      return condition;
+    });
+
+    onApply(mappedConditions);
     setOpen(false);
   };
 
@@ -151,30 +182,58 @@ export function FilterDialog({
                       </Select>
                     ) : (
                       <>
-                        <Input
-                          type="number"
-                          value={condition.min ?? ""}
-                          onChange={(e) =>
-                            updateCondition(index, {
-                              min: e.target.value
-                                ? Number(e.target.value)
-                                : undefined,
-                            })
-                          }
-                          placeholder="Từ"
-                        />
-                        <Input
-                          type="number"
-                          value={condition.max ?? ""}
-                          onChange={(e) =>
-                            updateCondition(index, {
-                              max: e.target.value
-                                ? Number(e.target.value)
-                                : undefined,
-                            })
-                          }
-                          placeholder="Đến"
-                        />
+                        <div className="relative flex-1">
+                          {selectedField.numberOptions?.unit && (
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                              {selectedField.numberOptions.unit}
+                            </span>
+                          )}
+                          <Input
+                            type="number"
+                            value={condition.min ?? ""}
+                            onChange={(e) =>
+                              updateCondition(index, {
+                                min: e.target.value
+                                  ? Number(e.target.value)
+                                  : undefined,
+                                // Set parameter name based on field key
+                                paramNames: {
+                                  ...condition.paramNames,
+                                  minParam: `min${selectedField.key.charAt(0).toUpperCase()}${selectedField.key.slice(1)}`,
+                                }
+                              })
+                            }
+                            className={selectedField.numberOptions?.unit ? "pl-8" : ""}
+                            placeholder={selectedField.numberOptions?.minLabel || "Từ"}
+                            step={selectedField.numberOptions?.step}
+                          />
+                        </div>
+                        <div className="relative flex-1">
+                          {selectedField.numberOptions?.unit && (
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                              {selectedField.numberOptions.unit}
+                            </span>
+                          )}
+                          <Input
+                            type="number"
+                            value={condition.max ?? ""}
+                            onChange={(e) =>
+                              updateCondition(index, {
+                                max: e.target.value
+                                  ? Number(e.target.value)
+                                  : undefined,
+                                // Set parameter name based on field key
+                                paramNames: {
+                                  ...condition.paramNames,
+                                  maxParam: `max${selectedField.key.charAt(0).toUpperCase()}${selectedField.key.slice(1)}`,
+                                }
+                              })
+                            }
+                            className={selectedField.numberOptions?.unit ? "pl-8" : ""}
+                            placeholder={selectedField.numberOptions?.maxLabel || "Đến"}
+                            step={selectedField.numberOptions?.step}
+                          />
+                        </div>
                       </>
                     )}
                   </div>

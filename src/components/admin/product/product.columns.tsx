@@ -1,8 +1,13 @@
 import { DataTableActions } from "@/components/common/DatatableActions";
-import { Product } from "@/db/schema";
+import { Category, Product } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Pencil, Trash2 } from "lucide-react";
+
+// Define the table meta type that includes categories
+type ProductTableMeta = {
+  categories: Category[];
+};
 
 export const createProductColumns = (
   handleEdit: (product: Product) => void,
@@ -46,11 +51,15 @@ export const createProductColumns = (
   {
     accessorKey: "categoryId",
     header: "Danh mục",
-    cell: ({ row }) => {
-      const categoryId = row.getValue("categoryId");
+    cell: ({ row, table }) => {
+      const categoryId = row.getValue("categoryId") as number | null;
+      // Access the categories data stored in the table meta
+      const categories = (table.options.meta as ProductTableMeta)?.categories || [];
+      const category = categories.find((cat) => cat.id === categoryId);
+      
       return (
         <span className="text-gray-700">
-          {categoryId ? categoryId.toString() : "-"}
+          {category ? category.name : "-"}
         </span>
       );
     },

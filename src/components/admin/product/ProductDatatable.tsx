@@ -2,6 +2,8 @@
 import { GenericDataTable } from "@/components/common/GenericDatatable";
 import { Product } from "@/db/schema";
 import { UpdateProductSchema } from "@/validations/product.validation";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { useState } from "react";
 import PublishProductForm from "./PublishProductForm";
 import UpdateProductForm from "./UpdateProductForm";
@@ -11,6 +13,22 @@ import { productFilterFields } from "./product.filter";
 export default function ProductDatatable() {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [publishProduct, setPublishProduct] = useState<Product | null>(null);
+
+  // Fetch categories for displaying category names
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await axios.get("/api/admin/category", {
+        params: {
+          limit: 100,
+        },
+      });
+      return response.data.data.data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const categories = categoriesData || [];
 
   const transformToUpdateSchema = (product: Product): UpdateProductSchema => {
     return {
@@ -55,6 +73,7 @@ export default function ProductDatatable() {
           onSearch: (input) => [{ field: "name", value: input }],
         }}
         initialPageSize={10}
+        meta={{ categories }}
       />
     </>
   );
