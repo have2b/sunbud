@@ -17,13 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// Select component imports removed in favor of SearchableSelect
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -220,28 +215,20 @@ const InsertProductForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel required>Danh mục</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(Number(value))}
-                    value={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn danh mục" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories?.map(
-                        (category: { id: number; name: string }) => (
-                          <SelectItem
-                            key={category.id}
-                            value={category.id.toString()}
-                          >
-                            {category.name}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <SearchableSelect
+                      options={
+                        categories?.map((category: { id: number; name: string }) => ({
+                          label: category.name,
+                          value: category.id.toString(),
+                        })) || []
+                      }
+                      value={field.value?.toString() || ""}
+                      onValueChange={(value) => field.onChange(Number(value))}
+                      placeholder="Chọn danh mục"
+                      searchPlaceholder="Tìm kiếm danh mục..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

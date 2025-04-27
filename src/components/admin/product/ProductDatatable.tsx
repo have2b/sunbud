@@ -8,7 +8,7 @@ import { useState } from "react";
 import PublishProductForm from "./PublishProductForm";
 import UpdateProductForm from "./UpdateProductForm";
 import { createProductColumns } from "./product.columns";
-import { productFilterFields } from "./product.filter";
+import { getProductFilterFields } from "./product.filter";
 
 export default function ProductDatatable() {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -67,7 +67,7 @@ export default function ProductDatatable() {
           (product: Product) => setEditProduct(product),
           (product: Product) => setPublishProduct(product),
         )}
-        filterFields={productFilterFields}
+        filterFields={getProductFilterFields(categories)}
         searchableFields={{
           placeholder: "Tìm kiếm theo tên...",
           onSearch: (input) => [{ field: "name", value: input }],

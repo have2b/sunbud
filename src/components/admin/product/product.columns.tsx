@@ -21,15 +21,6 @@ export const createProductColumns = (
     ),
   },
   {
-    accessorKey: "description",
-    header: "Mô tả",
-    cell: ({ row }) => (
-      <span className="line-clamp-2 text-gray-600">
-        {row.getValue("description") || "-"}
-      </span>
-    ),
-  },
-  {
     accessorKey: "price",
     header: "Giá",
     cell: ({ row }) => (
@@ -54,13 +45,12 @@ export const createProductColumns = (
     cell: ({ row, table }) => {
       const categoryId = row.getValue("categoryId") as number | null;
       // Access the categories data stored in the table meta
-      const categories = (table.options.meta as ProductTableMeta)?.categories || [];
+      const categories =
+        (table.options.meta as ProductTableMeta)?.categories || [];
       const category = categories.find((cat) => cat.id === categoryId);
-      
+
       return (
-        <span className="text-gray-700">
-          {category ? category.name : "-"}
-        </span>
+        <span className="text-gray-700">{category ? category.name : "-"}</span>
       );
     },
   },

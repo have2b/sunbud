@@ -1,6 +1,8 @@
 import { FilterField } from "@/components/common/FilterDialog";
+import { Category } from "@/db/schema";
 
-export const productFilterFields: FilterField[] = [
+// Create a function that returns the filter fields with dynamic category options
+export const getProductFilterFields = (categories: Category[]): FilterField[] => [
   {
     key: "name",
     label: "Tên sản phẩm",
@@ -35,7 +37,13 @@ export const productFilterFields: FilterField[] = [
   {
     key: "categoryId",
     label: "Danh mục",
-    type: "number",
+    type: "select",
+    selectOptions: {
+      options: categories.map(category => ({
+        label: category.name,
+        value: category.id
+      }))
+    }
   },
   {
     key: "isPublish",
@@ -43,3 +51,6 @@ export const productFilterFields: FilterField[] = [
     type: "boolean",
   },
 ];
+
+// Default version with empty categories for backwards compatibility
+export const productFilterFields: FilterField[] = getProductFilterFields([]);

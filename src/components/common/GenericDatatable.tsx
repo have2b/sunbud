@@ -68,38 +68,72 @@ export function GenericDataTable<T>({
   );
   const [searchInput, setSearchInput] = useState("");
 
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { data, isLoading, error, refetch } = useQuery<{
     data: T[];
     total: number;
   }>({
     queryKey: [queryKey, pagination, filterConditions],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: (pagination.pageIndex + 1).toString(),
-        limit: pagination.pageSize.toString(),
-      });
+      try {
+        setIsSubmitting(true);
+        setApiError(null);
+        
+        const params = new URLSearchParams({
+          page: (pagination.pageIndex + 1).toString(),
+          limit: pagination.pageSize.toString(),
+        });
 
-      filterConditions.forEach((condition) => {
-        const fieldConfig = filterFields.find((f) => f.key === condition.field);
+        filterConditions.forEach((condition) => {
+          const fieldConfig = filterFields.find((f) => f.key === condition.field);
 
-        if (fieldConfig?.type === "number") {
-          // Use custom parameter names if available, otherwise fall back to field_min/field_max format
-          const minParamName = condition.paramNames?.minParam || `${condition.field}_min`;
-          const maxParamName = condition.paramNames?.maxParam || `${condition.field}_max`;
-          
-          if (condition.min !== undefined)
-            params.set(minParamName, condition.min.toString());
-          if (condition.max !== undefined)
-            params.set(maxParamName, condition.max.toString());
-        } else {
-          if (condition.value !== undefined)
-            params.set(condition.field, condition.value.toString());
+          if (fieldConfig?.type === "number") {
+            // Use custom parameter names if available, otherwise fall back to field_min/field_max format
+            const minParamName = condition.paramNames?.minParam || `${condition.field}_min`;
+            const maxParamName = condition.paramNames?.maxParam || `${condition.field}_max`;
+            
+            if (condition.min !== undefined)
+              params.set(minParamName, condition.min.toString());
+            if (condition.max !== undefined)
+              params.set(maxParamName, condition.max.toString());
+          } else if (fieldConfig?.type === "select") {
+            // Handle select fields directly
+            if (condition.value !== undefined) {
+              params.set(condition.field, condition.value.toString());
+            }
+          } else {
+            if (condition.value !== undefined)
+              params.set(condition.field, condition.value.toString());
+          }
+        });
+
+        const res = await fetch(`${apiPath}?${params}`);
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          const errorMessage = errorData?.message || `Error ${res.status}: ${res.statusText}`;
+          setApiError(errorMessage);
+          throw new Error(errorMessage);
         }
-      });
-
-      const res = await fetch(`${apiPath}?${params}`);
-      const json = await res.json();
-      return json.data;
+        
+        const json = await res.json();
+        
+        if (!json.success && json.message) {
+          setApiError(json.message);
+          throw new Error(json.message);
+        }
+        
+        return json.data;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+        console.error('API request failed:', errorMessage);
+        setApiError(errorMessage);
+        throw err;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
   });
 
@@ -112,15 +146,7 @@ export function GenericDataTable<T>({
     }
   }, [filterConditions, searchableFields]);
 
-  const handleApplyFilters = (conditions: FilterCondition[]) => {
-    setFilterConditions(conditions);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  };
 
-  const handleResetFilters = () => {
-    setFilterConditions([]);
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  };
 
   const table = useReactTable({
     data: data?.data || [],
@@ -131,11 +157,42 @@ export function GenericDataTable<T>({
     meta, // Pass meta data to the table instance
   });
 
+  const handleApplyFilters = (conditions: FilterCondition[]) => {
+    setApiError(null);
+    setFilterConditions(conditions);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  };
+
+  const handleResetFilters = () => {
+    setApiError(null);
+    setFilterConditions([]);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  };
+
   if (isLoading) return <DataTableLoading />;
   if (error) return <DataTableError error={error} retry={() => refetch()} />;
 
   return (
     <div className="space-y-4 p-4">
+      {apiError && (
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+          <p className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+              <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+            </svg>
+            {apiError}
+          </p>
+          <button 
+            onClick={() => {
+              setApiError(null);
+              refetch();
+            }}
+            className="mt-2 text-sm font-medium text-red-800 hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
         <FilterDialog
           fields={filterFields}
@@ -169,10 +226,13 @@ export function GenericDataTable<T>({
                 className="pl-8"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
+                disabled={isSubmitting}
               />
               <Search className="text-muted-foreground absolute top-2.5 left-2 size-5" />
             </div>
-            <Button type="submit">Tìm kiếm</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Đang tìm...' : 'Tìm kiếm'}
+            </Button>
           </form>
         )}
       </div>
