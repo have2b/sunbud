@@ -1,5 +1,7 @@
 import {
   boolean,
+  decimal,
+  integer,
   pgEnum,
   pgTable,
   serial,
@@ -61,3 +63,20 @@ export const categories = pgTable("categories", {
 });
 
 export type Category = typeof categories.$inferSelect;
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  categoryId: integer("category_id").references(() => categories.id, {
+    onDelete: "set null",
+  }),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  quantity: integer("quantity").notNull(),
+  imageUrl: text("image_url"),
+  isPublish: boolean("is_publish").default(false).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export type Product = typeof products.$inferSelect;
