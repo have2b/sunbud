@@ -4,6 +4,7 @@ import { makeResponse } from "@/utils/make-response";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+// Function to get categories
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const idParam = searchParams.get("id");

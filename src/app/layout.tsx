@@ -1,4 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
+
+import { LayoutProvider } from "@/providers/layout-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
@@ -23,8 +25,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${roboto.variable} antialiased`}>
         <QueryProvider>
-          {children}
-          <Toaster position="top-right" richColors={true} />
+          <LayoutProvider>
+            {children}
+            <Toaster position="top-right" richColors={true} />
+          </LayoutProvider>
         </QueryProvider>
       </body>
     </html>
