@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-import { Category } from "@/db/schema";
+import { Category } from "@/generated/prisma";
 import {
   updateCategorySchema,
   UpdateCategorySchema,

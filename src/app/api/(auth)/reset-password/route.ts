@@ -1,10 +1,10 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { sendEmail } from "@/lib/email";
 import { generateForgotPasswordEmail } from "@/lib/emailTemplates";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 // Password requirements from constants
 const passwordRequirements = [
@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
       );
     }
     // Lookup user
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
+    const user = await db.user.findFirst({
+      where: { email },
     });
     // Always return the same message for privacy
     const genericResponse = {
@@ -69,10 +69,10 @@ export async function POST(request: NextRequest) {
     const newPassword = generatePassword();
     const hashed = await bcrypt.hash(newPassword, 10);
     // Update password in DB
-    await db
-      .update(users)
-      .set({ passwordHash: hashed })
-      .where(eq(users.id, user.id));
+    await db.user.update({
+      where: { id: user.id },
+      data: { passwordHash: hashed },
+    });
     // Send email
     const { subject, html } = generateForgotPasswordEmail(
       user.firstName,

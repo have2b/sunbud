@@ -1,17 +1,15 @@
+import { PrismaClient } from "@/generated/prisma";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
-import { db } from "./db";
-import { users } from "./schema";
 
-/**
- * Checks if an admin user already exists in the database
- */
+const prisma = new PrismaClient();
+
 async function adminExists(): Promise<boolean> {
   try {
-    const admin = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.role, "ADMIN"));
+    const admin = await prisma.user.findMany({
+      where: {
+        role: "ADMIN",
+      },
+    });
 
     return admin.length > 0;
   } catch (error) {
@@ -67,17 +65,19 @@ async function createAdminUser(): Promise<void> {
   try {
     const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD!, 10);
 
-    await db.insert(users).values({
-      username: process.env.ADMIN_USERNAME!,
-      email: process.env.ADMIN_EMAIL!,
-      passwordHash,
-      firstName: process.env.ADMIN_FIRST_NAME!,
-      lastName: process.env.ADMIN_LAST_NAME!,
-      phone: process.env.ADMIN_PHONE!,
-      avatarUrl: "https://github.com/have2b.png",
-      role: "ADMIN",
-      otp: "",
-      isVerified: true,
+    await prisma.user.create({
+      data: {
+        username: process.env.ADMIN_USERNAME!,
+        email: process.env.ADMIN_EMAIL!,
+        passwordHash,
+        firstName: process.env.ADMIN_FIRST_NAME!,
+        lastName: process.env.ADMIN_LAST_NAME!,
+        phone: process.env.ADMIN_PHONE!,
+        avatarUrl: "https://github.com/have2b.png",
+        role: "ADMIN",
+        otp: "",
+        isVerified: true,
+      },
     });
 
     console.log("✅ Admin user created successfully");

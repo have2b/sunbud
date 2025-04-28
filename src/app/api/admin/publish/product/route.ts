@@ -1,8 +1,8 @@
-import { db } from "@/db/db";
-import { products } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function PUT(request: NextRequest) {
   const { id } = await request.json();
@@ -16,8 +16,8 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
-  const product = await db.query.products.findFirst({
-    where: eq(products.id, id),
+  const product = await db.product.findFirst({
+    where: { id },
   });
   if (!product) {
     return NextResponse.json(
@@ -29,12 +29,11 @@ export async function PUT(request: NextRequest) {
       { status: 404 },
     );
   }
-  const updated = await db
-    .update(products)
-    .set({ isPublish: !product.isPublish })
-    .where(eq(products.id, id))
-    .returning();
-  if (updated.length === 0) {
+  const updated = await db.product.update({
+    data: { isPublish: !product.isPublish },
+    where: { id },
+  });
+  if (!updated) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -47,7 +46,7 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(
     makeResponse({
       status: 200,
-      data: updated[0],
+      data: updated,
       message: !product.isPublish
         ? "Đã xuất bản sản phẩm thành công"
         : "Đã hủy xuất bản sản phẩm thành công",

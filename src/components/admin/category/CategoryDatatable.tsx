@@ -1,7 +1,7 @@
 // components/admin/category/CategoryDatatable.tsx
 "use client";
 import { GenericDataTable } from "@/components/common/GenericDatatable";
-import { Category } from "@/db/schema";
+import { Category } from "@/generated/prisma";
 import { useState } from "react";
 import { createCategoryColumns } from "./category.columns";
 import { categoryFilterFields } from "./category.filter";

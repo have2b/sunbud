@@ -1,20 +1,21 @@
-import { db } from "@/db/db";
-import type { User } from "@/db/schema";
-import { users } from "@/db/schema";
+import { Prisma, PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
 import { omit } from "lodash";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const idParam = Number(searchParams.get("id"));
+
   if (idParam) {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, idParam),
+    const user = await db.user.findUnique({
+      where: { id: idParam },
     });
+
     if (!user) {
       return NextResponse.json(
         makeResponse({
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
         { status: 404 },
       );
     }
+
     return NextResponse.json(
       makeResponse({
         status: 200,
@@ -43,32 +45,31 @@ export async function GET(request: NextRequest) {
   const lastName = searchParams.get("lastName");
   const phone = searchParams.get("phone");
 
-  const conditions = [];
-  if (username) conditions.push(ilike(users.username, `%${username}%`));
-  if (email) conditions.push(ilike(users.email, `%${email}%`));
-  if (firstName) conditions.push(ilike(users.firstName, `%${firstName}%`));
-  if (lastName) conditions.push(ilike(users.lastName, `%${lastName}%`));
-  if (phone) conditions.push(ilike(users.phone, `%${phone}%`));
-  conditions.push(eq(users.role, "USER"));
+  const where: Prisma.UserWhereInput = {
+    role: "USER",
+  };
 
-  const totalResult = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(users)
-    .where(conditions.length ? and(...conditions) : undefined);
-  const total = totalResult[0].count;
+  if (username) where.username = { contains: username, mode: "insensitive" };
+  if (email) where.email = { contains: email, mode: "insensitive" };
+  if (firstName) where.firstName = { contains: firstName, mode: "insensitive" };
+  if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
+  if (phone) where.phone = { contains: phone, mode: "insensitive" };
 
-  const usersList = await db.query.users.findMany({
-    where: conditions.length ? and(...conditions) : undefined,
-    orderBy: [desc(users.isVerified), asc(users.username)],
-    offset: (page - 1) * limit,
-    limit,
-  });
+  const [total, usersList] = await Promise.all([
+    db.user.count({ where }),
+    db.user.findMany({
+      where,
+      orderBy: [{ isVerified: "desc" }, { username: "asc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
 
   return NextResponse.json(
     makeResponse({
       status: 200,
       data: {
-        data: usersList.map((user) => omit(user, ["passwordHash", "otp"])),
+        data: usersList.map((u) => omit(u, ["passwordHash", "otp"])),
         total,
       },
       message: "Lấy danh sách người dùng thành công",
@@ -81,23 +82,23 @@ export async function POST(request: NextRequest) {
   try {
     const { username, email, password, firstName, lastName, phone, avatarUrl } =
       await request.json();
+
     if (!username || !email || !password || !firstName || !lastName || !phone) {
       return NextResponse.json(
         makeResponse({
           status: 400,
           data: {},
-          message:
-            "username, email, password, firstName, lastName, phone là bắt buộc",
+          message: "Các trường bắt buộc không được để trống",
         }),
         { status: 400 },
       );
     }
+
     const passwordHash = await bcrypt.hash(password, 10);
     const otp = randomUUID().slice(0, 6);
 
-    const inserted = await db
-      .insert(users)
-      .values({
+    const created = await db.user.create({
+      data: {
         username,
         email,
         passwordHash,
@@ -107,9 +108,8 @@ export async function POST(request: NextRequest) {
         avatarUrl: avatarUrl || null,
         otp,
         role: "USER",
-      })
-      .returning();
-    const created = inserted[0];
+      },
+    });
 
     return NextResponse.json(
       makeResponse({
@@ -119,23 +119,22 @@ export async function POST(request: NextRequest) {
       }),
       { status: 201 },
     );
-  } catch (error: unknown) {
-    // Narrow unknown to database error
-    const dbError = error as { code?: string; detail?: string };
-    if (dbError.code === "23505") {
-      const detail = dbError.detail as string;
-      const match = detail.match(/\(([^)]+)\)=/);
-      const key = match?.[1] ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      const key = error.meta?.target?.[0] ?? "";
       const fieldMessageMap: Record<string, string> = {
         username: "Tên người dùng đã tồn tại",
         email: "Email đã tồn tại",
         phone: "Số điện thoại đã tồn tại",
       };
       const message = fieldMessageMap[key] || "Dữ liệu đã được sử dụng";
-      const errors: Record<string, string> = {};
-      if (key) errors[key] = message;
       return NextResponse.json(
-        makeResponse({ status: 409, data: { errors }, message }),
+        makeResponse({
+          status: 409,
+          data: { errors: { [key]: message } },
+          message,
+        }),
         { status: 409 },
       );
     }
@@ -155,60 +154,55 @@ export async function PUT(request: NextRequest) {
   try {
     const { id, email, password, firstName, lastName, phone, avatarUrl } =
       await request.json();
+
     if (!id) {
       return NextResponse.json(
         makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
         { status: 400 },
       );
     }
-    const dataToUpdate: Partial<User> = {
+
+    const dataToUpdate: Prisma.UserUpdateInput = {
       email,
       firstName,
       lastName,
       phone,
       avatarUrl: avatarUrl || null,
     };
-    if (password) dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
 
-    const updated = await db
-      .update(users)
-      .set(dataToUpdate)
-      .where(eq(users.id, id))
-      .returning();
-    if (updated.length === 0) {
-      return NextResponse.json(
-        makeResponse({
-          status: 404,
-          data: {},
-          message: "Người dùng không tồn tại",
-        }),
-        { status: 404 },
-      );
+    if (password) {
+      dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
     }
+
+    const updated = await db.user.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+
     return NextResponse.json(
       makeResponse({
         status: 200,
-        data: omit(updated[0], ["passwordHash", "otp"]),
+        data: omit(updated, ["passwordHash", "otp"]),
         message: "Cập nhật người dùng thành công",
       }),
       { status: 200 },
     );
-  } catch (error: unknown) {
-    const dbError = error as { code?: string; detail?: string };
-    if (dbError.code === "23505") {
-      const detail = dbError.detail as string;
-      const match = detail.match(/\(([^)]+)\)=/);
-      const key = match?.[1] ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      const key = error.meta?.target?.[0] ?? "";
       const fieldMessageMap: Record<string, string> = {
         username: "Tên người dùng đã tồn tại",
         email: "Email đã tồn tại",
         phone: "Số điện thoại đã tồn tại",
       };
       const message = fieldMessageMap[key] || "Dữ liệu đã được sử dụng";
-      const errors: Record<string, string> = {};
-      if (key) errors[key] = message;
       return NextResponse.json(
-        makeResponse({ status: 409, data: { errors }, message }),
+        makeResponse({
+          status: 409,
+          data: { errors: { [key]: message } },
+          message,
+        }),
         { status: 409 },
       );
     }
@@ -222,33 +216,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 },
     );
   }
-}
-
-export async function DELETE(request: NextRequest) {
-  const { id } = await request.json();
-  if (!id) {
-    return NextResponse.json(
-      makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
-      { status: 400 },
-    );
-  }
-  const deleted = await db.delete(users).where(eq(users.id, id)).returning();
-  if (deleted.length === 0) {
-    return NextResponse.json(
-      makeResponse({
-        status: 404,
-        data: {},
-        message: "Người dùng không tồn tại",
-      }),
-      { status: 404 },
-    );
-  }
-  return NextResponse.json(
-    makeResponse({
-      status: 200,
-      data: {},
-      message: "Xóa người dùng thành công",
-    }),
-    { status: 200 },
-  );
 }

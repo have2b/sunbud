@@ -1,27 +1,28 @@
-import { sql } from "drizzle-orm";
-import { db } from "./db";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 async function resetDatabase() {
-  await db.execute(sql`-- Begin transaction for atomic operation
-BEGIN;
+  await prisma.$executeRawUnsafe(`
+    BEGIN;
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
+    GRANT ALL ON SCHEMA public TO public;
+    REVOKE CREATE ON SCHEMA public FROM public;
+    COMMIT;
+  `);
 
--- Drop the public schema (and all objects) safely
-DROP SCHEMA public CASCADE;
-
--- Recreate the public schema
-CREATE SCHEMA public;
-
--- Optionally, reset privileges on the new schema
-GRANT ALL ON SCHEMA public TO public;
-REVOKE CREATE ON SCHEMA public FROM public;
-
-COMMIT;
-
--- End transaction
-`);
   console.log("🧹 Database schema reset! Now reapplying schema...");
 }
 
-resetDatabase();
-
-console.log("✅ Database reset completed successfully");
+resetDatabase()
+  .then(() => {
+    console.log("✅ Database reset completed successfully");
+  })
+  .catch((e) => {
+    console.error("Error during reset", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -1,8 +1,10 @@
 import { FilterField } from "@/components/common/FilterDialog";
-import { Category } from "@/db/schema";
+import { Category } from "@/generated/prisma";
 
 // Create a function that returns the filter fields with dynamic category options
-export const getProductFilterFields = (categories: Category[]): FilterField[] => [
+export const getProductFilterFields = (
+  categories: Category[],
+): FilterField[] => [
   {
     key: "name",
     label: "Tên sản phẩm",
@@ -21,8 +23,8 @@ export const getProductFilterFields = (categories: Category[]): FilterField[] =>
       minLabel: "Giá từ",
       maxLabel: "Giá đến",
       step: 1000,
-      unit: "₫"
-    }
+      unit: "₫",
+    },
   },
   {
     key: "quantity",
@@ -31,19 +33,19 @@ export const getProductFilterFields = (categories: Category[]): FilterField[] =>
     numberOptions: {
       minLabel: "Từ",
       maxLabel: "Đến",
-      step: 1
-    }
+      step: 1,
+    },
   },
   {
     key: "categoryId",
     label: "Danh mục",
     type: "select",
     selectOptions: {
-      options: categories.map(category => ({
+      options: categories.map((category) => ({
         label: category.name,
-        value: category.id
-      }))
-    }
+        value: category.id,
+      })),
+    },
   },
   {
     key: "isPublish",

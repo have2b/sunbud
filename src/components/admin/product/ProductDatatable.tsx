@@ -1,6 +1,6 @@
 "use client";
 import { GenericDataTable } from "@/components/common/GenericDatatable";
-import { Product } from "@/db/schema";
+import { Product } from "@/generated/prisma";
 import { UpdateProductSchema } from "@/validations/product.validation";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { User } from "@/db/schema";
+import { User } from "@/generated/prisma";
 import {
   updateUserSchema,
   UpdateUserSchema,
@@ -80,9 +80,15 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ user, onClose }) => {
     onError: (error: any) => {
       // Handle unique constraint errors
       if (error.response?.status === 409 && error.response.data?.data?.errors) {
-        const fieldErrors = error.response.data.data.errors as Record<string, string>;
+        const fieldErrors = error.response.data.data.errors as Record<
+          string,
+          string
+        >;
         Object.entries(fieldErrors).forEach(([field, message]) => {
-          form.setError(field as keyof UpdateUserSchema, { type: 'server', message });
+          form.setError(field as keyof UpdateUserSchema, {
+            type: "server",
+            message,
+          });
         });
       } else {
         const msg = error.response?.data?.message || error.message;

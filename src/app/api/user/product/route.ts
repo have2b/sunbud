@@ -1,8 +1,8 @@
-import { db } from "@/db/db";
-import { products } from "@/db/schema";
+import { Prisma, PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { and, eq, gte, inArray, like, lte } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,76 +14,55 @@ export async function GET(request: NextRequest) {
     const minQuantity = searchParams.get("minQuantity");
     const sortOption = searchParams.get("sort");
 
-    // Build where conditions
-    const whereConditions = [];
+    // Build where object
+    const where: Prisma.ProductWhereInput = {
+      isPublish: true,
+    };
 
-    // Add search condition if search term is provided
     if (searchTerm && searchTerm.trim() !== "") {
-      whereConditions.push(like(products.name, `%${searchTerm}%`));
+      where.name = {
+        contains: searchTerm,
+        mode: "insensitive", // optional, for case-insensitive search
+      };
     }
 
-    // Add category filter if categoryIds are provided
     if (categoryIds && categoryIds !== "") {
       const ids = categoryIds.split(",").map((id) => parseInt(id, 10));
       if (ids.length > 0) {
-        whereConditions.push(inArray(products.categoryId, ids));
+        where.categoryId = {
+          in: ids,
+        };
       }
     }
 
-    // Add price range filter
-    if (minPrice && minPrice !== "") {
-      whereConditions.push(gte(products.price, minPrice));
+    if (minPrice || maxPrice) {
+      where.price = {
+        ...(minPrice && { gte: Number(minPrice) }),
+        ...(maxPrice && { lte: Number(maxPrice) }),
+      };
     }
 
-    if (maxPrice && maxPrice !== "") {
-      whereConditions.push(lte(products.price, maxPrice));
+    if (minQuantity) {
+      where.quantity = {
+        gte: Number(minQuantity),
+      };
     }
 
-    // Add minimum quantity filter
-    if (minQuantity && minQuantity !== "") {
-      whereConditions.push(gte(products.quantity, parseInt(minQuantity, 10)));
-    }
+    // Setup orderBy for Prisma if possible
+    const orderBy: Prisma.ProductOrderByWithRelationInput =
+      sortOption === "price-asc"
+        ? { price: "asc" }
+        : sortOption === "price-desc"
+          ? { price: "desc" }
+          : { createdAt: "desc" }; // Default sorting
 
-    // Only show published products
-    whereConditions.push(eq(products.isPublish, true));
-
-    // Create the where clause
-    const whereClause =
-      whereConditions.length > 0 ? and(...whereConditions) : undefined;
-
-    // Query the products
-    const query = db.query.products.findMany({
-      where: whereClause,
-      with: {
+    const productsData = await prisma.product.findMany({
+      where,
+      orderBy,
+      include: {
         category: true,
       },
     });
-
-    // Execute the query
-    const productsData = await query;
-    console.log(productsData);
-
-    // Apply sorting after fetching data
-    if (sortOption) {
-      switch (sortOption) {
-        case "price-asc":
-          productsData.sort((a, b) => Number(a.price) - Number(b.price));
-          break;
-        case "price-desc":
-          productsData.sort((a, b) => Number(b.price) - Number(a.price));
-          break;
-        case "popularity":
-          // Placeholder for popularity (could be based on views/sales)
-          break;
-        case "newest":
-        default:
-          productsData.sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-          );
-          break;
-      }
-    }
 
     return NextResponse.json(
       makeResponse({

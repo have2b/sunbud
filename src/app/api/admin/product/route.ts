@@ -1,16 +1,16 @@
-import { db } from "@/db/db";
-import { products } from "@/db/schema";
+import { Prisma, PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const idParam = Number(searchParams.get("id"));
   if (idParam) {
-    const product = await db.query.products.findFirst({
-      where: eq(products.id, idParam),
+    const product = await db.product.findFirst({
+      where: { id: idParam },
     });
 
     if (!product) {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
 
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
+
   const name = searchParams.get("name");
   const description = searchParams.get("description");
   const isPublish = searchParams.get("isPublish");
@@ -45,41 +46,59 @@ export async function GET(request: NextRequest) {
   const minQuantity = searchParams.get("minQuantity");
   const maxQuantity = searchParams.get("maxQuantity");
 
-  const conditions = [];
+  const conditions: Prisma.ProductWhereInput[] = [];
 
-  if (name) conditions.push(ilike(products.name, `%${name}%`));
-  if (description)
-    conditions.push(ilike(products.description, `%${description}%`));
-  if (isPublish) conditions.push(eq(products.isPublish, isPublish === "true"));
-  if (categoryId) conditions.push(eq(products.categoryId, Number(categoryId)));
-  if (minPrice)
-    conditions.push(sql`CAST(${products.price} AS DECIMAL) >= ${minPrice}`);
-  if (maxPrice)
-    conditions.push(sql`CAST(${products.price} AS DECIMAL) <= ${maxPrice}`);
-  if (minQuantity)
-    conditions.push(sql`${products.quantity} >= ${Number(minQuantity)}`);
-  if (maxQuantity)
-    conditions.push(sql`${products.quantity} <= ${Number(maxQuantity)}`);
+  if (name) {
+    conditions.push({ name: { contains: name, mode: "insensitive" } });
+  }
 
-  const totalResult = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(products)
-    .where(conditions.length ? and(...conditions) : undefined);
+  if (description) {
+    conditions.push({
+      description: { contains: description, mode: "insensitive" },
+    });
+  }
 
-  const total = totalResult[0].count;
+  if (isPublish) {
+    conditions.push({ isPublish: isPublish === "true" });
+  }
 
-  const productsList = await db.query.products.findMany({
-    where: conditions.length ? and(...conditions) : undefined,
-    orderBy: [desc(products.isPublish), asc(products.name)],
-    offset: (page - 1) * limit,
-    limit: limit,
-  });
+  if (categoryId) {
+    conditions.push({ categoryId: Number(categoryId) });
+  }
+
+  if (minPrice) {
+    conditions.push({ price: { gte: Number(minPrice) } });
+  }
+
+  if (maxPrice) {
+    conditions.push({ price: { lte: Number(maxPrice) } });
+  }
+
+  if (minQuantity) {
+    conditions.push({ quantity: { gte: Number(minQuantity) } });
+  }
+
+  if (maxQuantity) {
+    conditions.push({ quantity: { lte: Number(maxQuantity) } });
+  }
+
+  const whereCondition = conditions.length ? { AND: conditions } : undefined;
+
+  const [total, products] = await Promise.all([
+    db.product.count({ where: whereCondition }),
+    db.product.findMany({
+      where: whereCondition,
+      orderBy: [{ isPublish: "desc" }, { name: "asc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
 
   return NextResponse.json(
     makeResponse({
       status: 200,
       data: {
-        data: productsList,
+        data: products,
         total: total,
       },
       message: "Lấy danh sách sản phẩm thành công",
@@ -89,7 +108,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
   const {
     name,
     description,
@@ -98,7 +116,7 @@ export async function POST(request: NextRequest) {
     categoryId,
     isPublish,
     imageUrl,
-  } = body;
+  } = await request.json();
 
   if (!name || !price || !categoryId) {
     return NextResponse.json(
@@ -111,23 +129,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const inserted = await db
-    .insert(products)
-    .values({
+  const inserted = await db.product.create({
+    data: {
       name,
       description,
       price: price.toString(),
-      quantity: Number(quantity),
+      quantity: quantity ? Number(quantity) : 0,
       imageUrl,
       categoryId: Number(categoryId),
       isPublish,
-    })
-    .returning();
+    },
+  });
 
   return NextResponse.json(
     makeResponse({
       status: 201,
-      data: inserted[0],
+      data: inserted,
       message: "Tạo sản phẩm thành công",
     }),
     { status: 201 },
@@ -135,9 +152,18 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const { id, ...rest } = await request.json();
+  const {
+    id,
+    name,
+    description,
+    price,
+    quantity,
+    categoryId,
+    isPublish,
+    imageUrl,
+  } = await request.json();
 
-  if (!id || !rest.name || !rest.price || !rest.categoryId) {
+  if (!id || !name || !price || !categoryId) {
     return NextResponse.json(
       makeResponse({
         status: 400,
@@ -148,19 +174,20 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  const updated = await db
-    .update(products)
-    .set({
-      ...rest,
-      price: rest.price.toString(),
-      quantity: Number(rest.quantity),
-      imageUrl: rest.imageUrl,
-      categoryId: Number(rest.categoryId),
-    })
-    .where(eq(products.id, id))
-    .returning();
+  const updated = await db.product.update({
+    data: {
+      name,
+      description,
+      price: price.toString(),
+      quantity: quantity ? Number(quantity) : 0,
+      imageUrl,
+      categoryId: Number(categoryId),
+      isPublish,
+    },
+    where: { id },
+  });
 
-  if (updated.length === 0) {
+  if (!updated) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -174,42 +201,9 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(
     makeResponse({
       status: 200,
-      data: updated[0],
+      data: updated,
       message: "Cập nhật sản phẩm thành công",
     }),
-    { status: 200 },
-  );
-}
-
-export async function DELETE(request: NextRequest) {
-  const { id } = await request.json();
-
-  if (!id) {
-    return NextResponse.json(
-      makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
-      { status: 400 },
-    );
-  }
-
-  const deleted = await db
-    .update(products)
-    .set({ isPublish: false })
-    .where(eq(products.id, id))
-    .returning();
-
-  if (deleted.length === 0) {
-    return NextResponse.json(
-      makeResponse({
-        status: 404,
-        data: {},
-        message: "Sản phẩm không tồn tại",
-      }),
-      { status: 404 },
-    );
-  }
-
-  return NextResponse.json(
-    makeResponse({ status: 200, data: {}, message: "Ẩn sản phẩm thành công" }),
     { status: 200 },
   );
 }

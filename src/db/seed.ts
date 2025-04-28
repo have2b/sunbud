@@ -1,8 +1,9 @@
+import { PrismaClient } from "@/generated/prisma";
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
-import { db } from "./db";
-import { categories, products, users } from "./schema";
+
+const prisma = new PrismaClient();
 
 async function seedCategories(count = 50) {
   // Efficiently create unique category names by appending a random string
@@ -15,7 +16,7 @@ async function seedCategories(count = 50) {
       isPublish: faker.datatype.boolean(),
     };
   });
-  await db.insert(categories).values(rows);
+  await prisma.category.createMany({ data: rows });
   console.log(`✅ Seeded ${count} categories`);
 }
 
@@ -55,7 +56,7 @@ async function seedUsers(count = 1000, batchSize = 200) {
   // Batch insert
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = rows.slice(i, i + batchSize);
-    await db.insert(users).values(batch);
+    await prisma.user.createMany({ data: batch });
   }
   console.log(`✅ Seeded ${count} users (batch size: ${batchSize})`);
 }
@@ -78,7 +79,7 @@ async function seedProducts(count = 10000, batchSize = 1000) {
   // Batch insert
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = rows.slice(i, i + batchSize);
-    await db.insert(products).values(batch);
+    await prisma.product.createMany({ data: batch });
   }
   console.log(`✅ Seeded ${count} products (batch size: ${batchSize})`);
 }

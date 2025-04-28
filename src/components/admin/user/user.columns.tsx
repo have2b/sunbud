@@ -1,5 +1,5 @@
 import { DataTableActions } from "@/components/common/DatatableActions";
-import { User } from "@/db/schema";
+import { User } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Pencil, Trash2 } from "lucide-react";

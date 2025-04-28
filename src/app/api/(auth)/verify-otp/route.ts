@@ -1,8 +1,8 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   const { otp } = await request.json();
@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const user = await db.query.users.findFirst({
-    where: eq(users.otp, otp),
+  const user = await db.user.findFirst({
+    where: { otp },
   });
 
   if (!user) {
@@ -24,13 +24,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await db
-    .update(users)
-    .set({
-      isVerified: true,
-      otp: "",
-    })
-    .where(eq(users.otp, otp));
+  await db.user.update({
+    where: { id: user.id },
+    data: { isVerified: true, otp: "" },
+  });
 
   return NextResponse.json(
     makeResponse({ status: 200, data: {}, message: "Xác nhận OTP thành công" }),

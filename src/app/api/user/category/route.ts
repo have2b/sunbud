@@ -1,8 +1,8 @@
-import { db } from "@/db/db";
-import { categories } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const prisma = new PrismaClient();
 
 // Function to get categories
 export async function GET(request: NextRequest) {
@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
 
   if (idParam) {
     const id = Number(idParam);
-    const category = await db.query.categories.findFirst({
-      where: and(eq(categories.isPublish, true), eq(categories.id, id)),
+    const category = await prisma.category.findFirst({
+      where: { id, isPublish: true },
     });
     if (!category) {
       return NextResponse.json(
@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const allCategories = await db.query.categories.findMany({
-    where: eq(categories.isPublish, true),
+  const allCategories = await prisma.category.findMany({
+    where: { isPublish: true },
   });
   return NextResponse.json(
     makeResponse({

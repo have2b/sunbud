@@ -1,7 +1,7 @@
-import { db } from "@/db/db";
-import { categories } from "@/db/schema";
+import { Prisma, PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
+const db = new PrismaClient();
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   // Handle single category request
   const idParam = Number(searchParams.get("id"));
   if (idParam) {
-    const category = await db.query.categories.findFirst({
-      where: eq(categories.id, idParam),
+    const category = await db.category.findFirst({
+      where: { id: idParam },
     });
 
     if (!category) {
@@ -43,41 +43,39 @@ export async function GET(request: NextRequest) {
   const isPublish = searchParams.get("isPublish");
 
   // Build filter conditions
-  const conditions = [];
+  const conditions: Prisma.CategoryWhereInput[] = [];
 
   if (name) {
-    conditions.push(ilike(categories.name, `%${name}%`));
+    conditions.push({ name: { contains: name, mode: "insensitive" } });
   }
 
   if (description) {
-    conditions.push(ilike(categories.description, `%${description}%`));
+    conditions.push({
+      description: { contains: description, mode: "insensitive" },
+    });
   }
 
   if (isPublish) {
-    conditions.push(eq(categories.isPublish, isPublish === "true"));
+    conditions.push({ isPublish: isPublish === "true" });
   }
 
-  // Get total count
-  const totalResult = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(categories)
-    .where(conditions.length ? and(...conditions) : undefined);
-
-  const total = totalResult[0].count;
-
-  // Get paginated results
-  const categoriesList = await db.query.categories.findMany({
-    where: conditions.length ? and(...conditions) : undefined,
-    orderBy: [desc(categories.isPublish), asc(categories.name)],
-    offset: (page - 1) * limit,
-    limit: limit,
-  });
+  const [total, categories] = await Promise.all([
+    db.category.count({
+      where: conditions.length ? { AND: conditions } : undefined,
+    }),
+    db.category.findMany({
+      where: conditions.length ? { AND: conditions } : undefined,
+      orderBy: [{ isPublish: "desc" }, { name: "asc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
 
   return NextResponse.json(
     makeResponse({
       status: 200,
       data: {
-        data: categoriesList,
+        data: categories,
         total: total,
       },
       message: "Lấy danh sách danh mục thành công",
@@ -98,15 +96,13 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  const inserted = await db
-    .insert(categories)
-    .values({ name, description, isPublish })
-    .returning();
-  const created = inserted[0];
+  const inserted = await db.category.create({
+    data: { name, description, isPublish },
+  });
   return NextResponse.json(
     makeResponse({
       status: 201,
-      data: created,
+      data: inserted,
       message: "Tạo danh mục thành công",
     }),
     { status: 201 },
@@ -125,12 +121,11 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
-  const updated = await db
-    .update(categories)
-    .set({ name, description, isPublish })
-    .where(eq(categories.id, id))
-    .returning();
-  if (updated.length === 0) {
+  const updated = await db.category.update({
+    data: { name, description, isPublish },
+    where: { id },
+  });
+  if (!updated) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -143,38 +138,9 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(
     makeResponse({
       status: 200,
-      data: updated[0],
+      data: updated,
       message: "Cập nhật danh mục thành công",
     }),
-    { status: 200 },
-  );
-}
-
-export async function DELETE(request: NextRequest) {
-  const { id } = await request.json();
-  if (!id) {
-    return NextResponse.json(
-      makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
-      { status: 400 },
-    );
-  }
-  const deleted = await db
-    .update(categories)
-    .set({ isPublish: false })
-    .where(eq(categories.id, id))
-    .returning();
-  if (deleted.length === 0) {
-    return NextResponse.json(
-      makeResponse({
-        status: 404,
-        data: {},
-        message: "Danh mục không tồn tại",
-      }),
-      { status: 404 },
-    );
-  }
-  return NextResponse.json(
-    makeResponse({ status: 200, data: {}, message: "Ẩn danh mục thành công" }),
     { status: 200 },
   );
 }

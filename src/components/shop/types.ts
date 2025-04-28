@@ -1,4 +1,4 @@
-import { Product } from "@/db/schema";
+import { Product } from "@/generated/prisma";
 
 export type SortOption = "price-asc" | "price-desc" | "popularity" | "newest";
 

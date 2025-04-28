@@ -1,16 +1,19 @@
-import { Search } from "lucide-react";
-import { Category } from "@/db/schema";
+import { FilterState } from "@/components/shop/types";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { FilterState } from "@/components/shop/types";
+import { Category } from "@/generated/prisma";
+import { Search } from "lucide-react";
 
 interface FilterSidebarProps {
   filters: FilterState;
-  updateFilter: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void;
+  updateFilter: <K extends keyof FilterState>(
+    key: K,
+    value: FilterState[K],
+  ) => void;
   toggleCategory: (categoryId: number) => void;
   handlePriceChange: (value: number[]) => void;
   categories?: Category[];

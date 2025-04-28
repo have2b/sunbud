@@ -1,6 +1,6 @@
 "use client";
 import { GenericDataTable } from "@/components/common/GenericDatatable";
-import { User } from "@/db/schema";
+import { User } from "@/generated/prisma";
 import { useState } from "react";
 import UpdateUserForm from "./UpdateUserForm";
 import { createUserColumns } from "./user.columns";

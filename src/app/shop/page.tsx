@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Category } from "@/db/schema";
+import { Category } from "@/generated/prisma";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ChevronDown, Filter } from "lucide-react";

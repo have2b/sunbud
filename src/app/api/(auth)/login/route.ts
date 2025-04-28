@@ -1,20 +1,19 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { generateJWT } from "@/lib/utils";
 import { LoginResponseDto } from "@/types/auth.dto";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
-import { eq, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   const { emailOrUsername, password } = await request.json();
 
-  const user = await db.query.users.findFirst({
-    where: or(
-      eq(users.email, emailOrUsername),
-      eq(users.username, emailOrUsername),
-    ),
+  const user = await db.user.findFirst({
+    where: {
+      OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+    },
   });
 
   if (!user) {

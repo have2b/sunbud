@@ -1,8 +1,8 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function PUT(request: NextRequest) {
   const { id } = await request.json();
@@ -16,8 +16,8 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, id),
+  const user = await db.user.findFirst({
+    where: { id },
   });
   if (!user) {
     return NextResponse.json(
@@ -29,12 +29,11 @@ export async function PUT(request: NextRequest) {
       { status: 404 },
     );
   }
-  const updated = await db
-    .update(users)
-    .set({ isVerified: !user.isVerified })
-    .where(eq(users.id, id))
-    .returning();
-  if (updated.length === 0) {
+  const updated = await db.user.update({
+    data: { isVerified: !user.isVerified },
+    where: { id },
+  });
+  if (!updated) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -47,7 +46,7 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(
     makeResponse({
       status: 200,
-      data: updated[0],
+      data: updated,
       message: !user.isVerified
         ? "Kích hoạt người dùng thành công"
         : "Vô hiệu hóa người dùng thành công",

@@ -1,0 +1,85 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentMethod {
+  CREDITCARD
+  ONLINEBANKING
+  CODE
+}
+
+enum ShippingStatus {
+  PREPARING
+  SHIPPED
+  DELIVERED
+}
+
+enum Role {
+  USER
+  ADMIN
+  SHIPPER
+}
+
+// Models
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+  role         Role     @default(USER)
+  otp          String
+  isVerified   Boolean  @default(false)
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  isPublish   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  products    Product[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  categoryId  Int?
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  imageUrl    String?
+  isPublish   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+}

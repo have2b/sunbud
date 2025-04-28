@@ -1,7 +1,4 @@
-import Image from "next/image";
-import { Star, ShoppingCart } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Product } from "@/db/schema";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Product } from "@/generated/prisma";
+import { cn } from "@/lib/utils";
+import { ShoppingCart, Star } from "lucide-react";
+import Image from "next/image";
 
 type ProductWithCategory = Product & { category?: { name: string } };
 

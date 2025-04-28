@@ -1,11 +1,11 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { sendEmail } from "@/lib/email";
 import { generateOtpEmail } from "@/lib/emailTemplates";
 import { makeResponse } from "@/utils/make-response";
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   const { email } = await request.json();
@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const user = await db.query.users.findFirst({
-    where: eq(users.email, email),
+  const user = await db.user.findFirst({
+    where: { email },
   });
 
   if (!user) {
@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
   }
 
   const otp = randomUUID().slice(0, 6);
-  await db.update(users).set({ otp }).where(eq(users.email, email));
+  await db.user.update({
+    where: { email },
+    data: { otp },
+  });
 
   const { subject, html } = generateOtpEmail(
     user.firstName,

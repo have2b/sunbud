@@ -1,27 +1,27 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
+import { PrismaClient } from "@/generated/prisma";
 import { sendEmail } from "@/lib/email";
 import { generateOtpEmail } from "@/lib/emailTemplates";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
-import { eq, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+
+const db = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   const { username, email, firstName, lastName, phone, password } =
     await request.json();
 
-  const isEmailExists = await db.query.users.findFirst({
-    where: or(eq(users.email, email)),
+  const isEmailExists = await db.user.findFirst({
+    where: { email },
   });
 
-  const isUsernameExists = await db.query.users.findFirst({
-    where: or(eq(users.username, username)),
+  const isUsernameExists = await db.user.findFirst({
+    where: { username },
   });
 
-  const isPhoneExists = await db.query.users.findFirst({
-    where: or(eq(users.phone, phone)),
+  const isPhoneExists = await db.user.findFirst({
+    where: { phone },
   });
 
   if (isEmailExists) {
@@ -58,16 +58,18 @@ export async function POST(request: NextRequest) {
 
   const otp = randomUUID().slice(0, 6);
 
-  await db.insert(users).values({
-    username,
-    email,
-    passwordHash: hashedPassword,
-    firstName,
-    lastName,
-    phone,
-    avatarUrl,
-    role: "USER",
-    otp,
+  await db.user.create({
+    data: {
+      username,
+      email,
+      passwordHash: hashedPassword,
+      firstName,
+      lastName,
+      phone,
+      avatarUrl,
+      role: "USER",
+      otp,
+    },
   });
 
   const { subject, html } = generateOtpEmail(firstName, lastName, otp);

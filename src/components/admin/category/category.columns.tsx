@@ -1,6 +1,6 @@
 // components/admin/category/columns.ts
 import { DataTableActions } from "@/components/common/DatatableActions";
-import { Category } from "@/db/schema";
+import { Category } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Pencil, Trash2 } from "lucide-react";
