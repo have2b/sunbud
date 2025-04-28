@@ -11,6 +11,19 @@ export const insertProductSchema = v.object({
   imageUrl: v.optional(v.string()),
   categoryId: v.number(),
   isPublish: v.boolean(),
+  imagePublicId: v.pipe(
+    v.string(),
+    v.minLength(1, "Image public ID is required"),
+  ),
+  imageWidth: v.pipe(
+    v.number(),
+    v.minValue(1, "Image width must be at least 1"),
+  ),
+  imageHeight: v.pipe(
+    v.number(),
+    v.minValue(1, "Image height must be at least 1"),
+  ),
+  imageSize: v.pipe(v.number(), v.minValue(1, "Image size must be at least 1")),
 });
 
 export type InsertProductSchema = v.InferOutput<typeof insertProductSchema>;

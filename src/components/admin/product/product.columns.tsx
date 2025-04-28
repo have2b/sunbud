@@ -3,6 +3,7 @@ import { Category, Product } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 // Define the table meta type that includes categories
 type ProductTableMeta = {
@@ -13,6 +14,20 @@ export const createProductColumns = (
   handleEdit: (product: Product) => void,
   handlePublish: (product: Product) => void,
 ): ColumnDef<Product>[] => [
+  {
+    accessorKey: "imageUrl",
+    header: "Hình ảnh",
+    cell: ({ row }) => {
+      const imageUrl = row.getValue("imageUrl") as string;
+      return imageUrl ? (
+        <div className="relative size-16">
+          <Image src={imageUrl} alt="Product" fill objectFit="cover" />
+        </div>
+      ) : (
+        <span>-</span>
+      );
+    },
+  },
   {
     accessorKey: "name",
     header: "Tên sản phẩm",

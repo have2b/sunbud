@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -31,7 +32,8 @@ import {
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -43,6 +45,46 @@ interface UpdateProductFormProps {
 const UpdateProductForm = ({ product, onClose }: UpdateProductFormProps) => {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      const signatureResponse = await axios.post("/api/admin/signature");
+      const { timestamp, signature, apiKey, cloudName } =
+        signatureResponse.data;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", timestamp);
+      formData.append("signature", signature);
+      formData.append("cloud_name", cloudName);
+
+      const uploadResponse = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        formData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1),
+            );
+            setUploadProgress(percent);
+          },
+        },
+      );
+
+      const { secure_url } = uploadResponse.data;
+      form.setValue("imageUrl", secure_url);
+      setUploadError(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      setUploadError(error.message || "Image upload failed. Please try again.");
+    } finally {
+      setUploadProgress(0);
+    }
+  };
 
   // Fetch categories for dropdown
   const { data: categoriesData } = useQuery({
@@ -197,11 +239,39 @@ const UpdateProductForm = ({ product, onClose }: UpdateProductFormProps) => {
             <FormField
               control={form.control}
               name="imageUrl"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Ảnh</FormLabel>
+                  <FormLabel required>Ảnh</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <div className="space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file);
+                        }}
+                      />
+                      {uploadProgress > 0 && (
+                        <Progress value={uploadProgress} className="h-2" />
+                      )}
+                      {form.getValues("imageUrl") && (
+                        <div className="relative size-16">
+                          <Image
+                            src={form.getValues("imageUrl") ?? ""}
+                            alt="Preview"
+                            fill
+                            objectFit="contain"
+                          />
+                        </div>
+                      )}
+                      {uploadError && (
+                        <p className="text-destructive text-sm font-medium">
+                          {uploadError}
+                        </p>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
