@@ -7,6 +7,12 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+
+    // Pagination parameters
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 10;
+
+    // Filter parameters
     const searchTerm = searchParams.get("search");
     const categoryIds = searchParams.get("categories");
     const minPrice = searchParams.get("minPrice");
@@ -56,19 +62,26 @@ export async function GET(request: NextRequest) {
           ? { price: "desc" }
           : { createdAt: "desc" }; // Default sorting
 
-    const productsData = await prisma.product.findMany({
-      where,
-      orderBy,
-      include: {
-        category: true,
-      },
-    });
+    // Get total count and paginated data in parallel
+    const [total, productsData] = await Promise.all([
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where,
+        orderBy,
+        include: {
+          category: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
 
     return NextResponse.json(
       makeResponse({
         status: 200,
         data: {
-          products: productsData,
+          data: productsData,
+          total: total,
         },
         message: "Lấy sản phẩm thành công",
       }),

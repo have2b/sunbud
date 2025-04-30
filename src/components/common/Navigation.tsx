@@ -7,11 +7,11 @@ import SearchForm from "./SearchForm";
 
 const Navigation = () => {
   return (
-    <motion.header
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex w-full items-center justify-around bg-white py-4"
+      className="flex w-full items-center justify-around bg-rose-50 py-4"
     >
       {/* Logo */}
       <div className="flex">
@@ -46,7 +46,7 @@ const Navigation = () => {
           <SearchForm />
         </div>
       </div>
-    </motion.header>
+    </motion.div>
   );
 };
 

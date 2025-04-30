@@ -1,84 +1,52 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Product } from "@/generated/prisma";
-import { cn } from "@/lib/utils";
-import { ShoppingCart, Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { Product } from "@/generated/prisma";
 
-type ProductWithCategory = Product & { category?: { name: string } };
+interface ProductCardProps {
+  product: Product & {
+    category?: {
+      id: number;
+      name: string;
+    } | null;
+  };
+}
 
-export const ProductCard = ({ product }: { product: ProductWithCategory }) => (
-  <Card className="flex h-full flex-col overflow-hidden transition-all duration-200 hover:shadow-lg">
-    <div className="bg-muted relative aspect-square overflow-hidden">
-      {product.imageUrl ? (
-        <Image
-          src={product.imageUrl}
-          alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          width={500}
-          height={500}
-        />
-      ) : (
-        <div className="bg-secondary/30 flex h-full items-center justify-center">
-          <p className="text-muted-foreground">No image</p>
-        </div>
-      )}
+export const ProductCard = ({ product }: ProductCardProps) => {
+  const { id, name, price, imageUrl, category } = product;
+
+  return (
+    <div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
+      <Link href={`/shop/product/${id}`} className="block aspect-square overflow-hidden">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={name}
+            width={300}
+            height={300}
+            className="h-full w-full object-cover object-center transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gray-100">
+            <span className="text-gray-400">No image</span>
+          </div>
+        )}
+      </Link>
+      <div className="p-4">
+        {category && (
+          <span className="mb-1 inline-block text-xs font-medium text-gray-500">
+            {category.name}
+          </span>
+        )}
+        <Link href={`/shop/product/${id}`}>
+          <h3 className="mb-2 text-sm font-medium text-gray-900 line-clamp-2">{name}</h3>
+        </Link>
+        <p className="text-base font-semibold text-emerald-600">
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(Number(price) || 0)}
+        </p>
+      </div>
     </div>
-
-    <CardHeader className="p-4 pb-0">
-      <div className="flex items-center justify-between">
-        <div className="text-muted-foreground text-xs">
-          {product.category?.name || "Uncategorized"}
-        </div>
-        <div className="flex items-center text-amber-500">
-          <Star className="h-3 w-3 fill-current" />
-          <span className="ml-1 text-xs">4.5</span>
-        </div>
-      </div>
-      <CardTitle className="mt-2 line-clamp-1 text-base">
-        {product.name}
-      </CardTitle>
-    </CardHeader>
-
-    <CardContent className="flex-grow p-4 pt-2">
-      <p className="text-muted-foreground line-clamp-2 text-sm">
-        {product.description || "No description available"}
-      </p>
-      <div className="mt-2 text-sm">
-        <span className="text-muted-foreground">Stock:</span>{" "}
-        <span
-          className={cn(
-            "font-medium",
-            product.quantity > 10
-              ? "text-green-500"
-              : product.quantity > 0
-                ? "text-amber-500"
-                : "text-red-500",
-          )}
-        >
-          {product.quantity > 0
-            ? `${product.quantity} available`
-            : "Out of stock"}
-        </span>
-      </div>
-    </CardContent>
-
-    <CardFooter className="flex items-center justify-between p-4 pt-0">
-      <div className="text-lg font-bold">
-        ${Number(product.price).toFixed(2)}
-      </div>
-      <Button size="sm" disabled={product.quantity <= 0}>
-        <ShoppingCart className="mr-1 h-4 w-4" />
-        Add
-      </Button>
-    </CardFooter>
-  </Card>
-);
-
-export type { ProductWithCategory };
+  );
+};
