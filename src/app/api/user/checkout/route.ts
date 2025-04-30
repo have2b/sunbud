@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   const vnp_ExpireDate = format(
     new Date(Date.now() + 10 * 60 * 1000),
     "yyyyMMddHHmmss",
-  ); // 10 minutes
+  );
 
   // Create a sorted payment parameter object without the hash secret
   const paymentParams: PaymentParams = {
@@ -66,7 +66,12 @@ export async function POST(request: NextRequest) {
     vnp_TxnRef,
     vnp_Version,
   };
-  
+
+  console.log("--------------------------");
+  console.log("vnp_ExpireDate: ", vnp_ExpireDate);
+  console.log("vnp_CreateDate: ", vnp_CreateDate);
+  console.log("--------------------------");
+
   if (vnp_BankCode) {
     paymentParams.vnp_BankCode = vnp_BankCode;
   }
@@ -79,32 +84,32 @@ export async function POST(request: NextRequest) {
       acc[typedKey] = paymentParams[typedKey];
       return acc;
     }, {} as PaymentParams);
-    
+
   // Create the secure hash with sorted parameters
   const secureHashData = Object.entries(sortedParams)
     .map(([key, value]) => {
       // Only encode if value is defined
-      return `${key}=${value !== undefined ? encodeURIComponent(String(value)) : ''}`;
+      return `${key}=${value !== undefined ? encodeURIComponent(String(value)) : ""}`;
     })
-    .join('&');
-    
+    .join("&");
+
   const vnp_SecureHash = createHash("sha256")
     .update(vnp_HashSecret + secureHashData)
     .digest("hex");
-    
+
   // Add secure hash to parameters
-  const finalParams = { 
-    ...sortedParams, 
-    vnp_SecureHash 
+  const finalParams = {
+    ...sortedParams,
+    vnp_SecureHash,
   };
-  
+
   // Build the final URL
   const vnpUrl = `${vnp_Url}?${Object.entries(finalParams)
     .map(([key, value]) => {
       // Only encode if value is defined
-      return `${key}=${value !== undefined ? encodeURIComponent(String(value)) : ''}`;
+      return `${key}=${value !== undefined ? encodeURIComponent(String(value)) : ""}`;
     })
-    .join('&')}`;
+    .join("&")}`;
 
   // Return the URL to the client instead of redirecting
   return NextResponse.json({ paymentUrl: vnpUrl });
