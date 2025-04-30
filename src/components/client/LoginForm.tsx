@@ -18,7 +18,7 @@ import axios from "axios";
 import { Lock, User } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -32,6 +32,8 @@ import {
 
 const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const form = useForm<LoginSchema>({
@@ -51,7 +53,13 @@ const LoginForm = () => {
     onSuccess: (data) => {
       toast.success(data.message);
       setAuth(data.data, data.data.expiresIn);
-      router.push("/");
+      
+      // Redirect back to the previous URL if available, otherwise go to homepage
+      if (redirectUrl) {
+        router.push(decodeURIComponent(redirectUrl));
+      } else {
+        router.push("/");
+      }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
