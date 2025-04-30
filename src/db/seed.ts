@@ -5,55 +5,54 @@ import "dotenv/config";
 
 const prisma = new PrismaClient();
 
-async function seedCategories(count = 200) {
-  const rows = Array.from({ length: count }).map(() => {
-    const baseName = faker.commerce.department();
-    const uniqueName = `${baseName}_${faker.string.alphanumeric(8)}_${Date.now()}_${faker.number.int({ min: 1000, max: 9999 })}`;
-    return {
-      name: uniqueName,
+async function seedCategories(count = 20) {
+  const names = new Set<string>();
+  const rows = [];
+  while (names.size < count) {
+    const name = faker.commerce.department();
+    if (names.has(name)) continue;
+    names.add(name);
+    rows.push({
+      name,
       description: faker.commerce.productDescription(),
       isPublish: faker.datatype.boolean(),
-    };
-  });
+    });
+  }
   await prisma.category.createMany({ data: rows });
   console.log(`✅ Seeded ${count} categories`);
   return count;
 }
 
-async function seedUsers(count = 1000, batchSize = 200) {
-  const uniqueCheck = {
-    usernames: new Set<string>(),
-    emails: new Set<string>(),
-    phones: new Set<string>(),
-  };
+async function seedUsers(count = 100, batchSize = 20) {
+  const usernames = new Set<string>();
+  const emails = new Set<string>();
+  const phones = new Set<string>();
 
   const userRows = [];
   while (userRows.length < count) {
-    const baseUsername = faker.internet.username();
-    const uniqueUsername = `${baseUsername}_${faker.string.alphanumeric(8)}_${Date.now()}_${faker.number.int({ min: 1000, max: 9999 })}`;
-    if (uniqueCheck.usernames.has(uniqueUsername)) continue;
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const username = faker.internet.username();
+    if (usernames.has(username)) continue;
+    usernames.add(username);
 
-    const baseEmail = faker.internet.email();
-    const randomStr = `${faker.string.alphanumeric(8)}${Date.now()}${faker.number.int({ min: 1000, max: 9999 })}`;
-    const uniqueEmail = baseEmail.replace("@", `+${randomStr}@`);
-    if (uniqueCheck.emails.has(uniqueEmail)) continue;
+    const email = faker.internet.email();
+    if (emails.has(email)) continue;
+    emails.add(email);
 
-    const uniquePhone = `${faker.string.numeric(10)}${faker.string.numeric(4)}${Date.now().toString().slice(-6)}`;
-    if (uniqueCheck.phones.has(uniquePhone)) continue;
-
-    uniqueCheck.usernames.add(uniqueUsername);
-    uniqueCheck.emails.add(uniqueEmail);
-    uniqueCheck.phones.add(uniquePhone);
+    const phone = faker.string.numeric(10);
+    if (phones.has(phone)) continue;
+    phones.add(phone);
 
     userRows.push({
-      username: uniqueUsername,
-      email: uniqueEmail,
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      phone: uniquePhone,
+      username,
+      email,
+      firstName,
+      lastName,
+      phone,
       avatarUrl: faker.image.avatar(),
       role: "USER" as const,
-      otp: faker.string.alphanumeric(6),
+      otp: faker.string.numeric(6),
       isVerified: faker.datatype.boolean(),
     });
   }
@@ -76,23 +75,27 @@ async function seedUsers(count = 1000, batchSize = 200) {
 }
 
 async function seedProducts(
-  count = 10000,
-  batchSize = 1000,
+  count = 500,
+  batchSize = 100,
   categoryCount: number,
 ) {
-  const rows = Array.from({ length: count }).map(() => {
-    const baseName = faker.commerce.productName();
-    const uniqueName = `${baseName}_${faker.string.alphanumeric(12)}_${Date.now()}_${faker.number.int({ min: 1000, max: 9999 })}`;
-    return {
-      name: uniqueName,
+  const names = new Set<string>();
+  const rows = [];
+  while (rows.length < count) {
+    const name = faker.commerce.productName();
+    if (names.has(name)) continue;
+    names.add(name);
+
+    rows.push({
+      name,
       description: faker.commerce.productDescription(),
       categoryId: faker.number.int({ min: 1, max: categoryCount }),
       price: faker.commerce.price({ min: 10000, max: 1000000 }),
       quantity: faker.number.int({ min: 1, max: 100 }),
       imageUrl: faker.image.url(),
       isPublish: faker.datatype.boolean(),
-    };
-  });
+    });
+  }
 
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = rows.slice(i, i + batchSize);
@@ -111,12 +114,12 @@ async function main() {
     await prisma.$executeRaw`TRUNCATE TABLE "Category" RESTART IDENTITY CASCADE;`;
     console.log("✅ Tables truncated");
 
-    const categoryCount = await seedCategories(50);
+    const categoryCount = await seedCategories(20);
 
     // Seed users and products in parallel
     await Promise.all([
-      seedUsers(100, 200),
-      seedProducts(1000, 1000, categoryCount),
+      seedUsers(100, 20),
+      seedProducts(500, 100, categoryCount),
     ]);
 
     console.log("🎉 All done!");
