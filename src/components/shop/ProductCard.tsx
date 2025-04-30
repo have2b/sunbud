@@ -1,8 +1,11 @@
 import { Product } from "@/generated/prisma";
-import { PlusCircleIcon } from "lucide-react";
+import { useCartStore } from "@/hooks/useCartStore";
+import { PlusCircleIcon, CheckCircleIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product & {
@@ -17,10 +20,33 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { id, name, price, imageUrl, category, quantity, description } =
     product;
 
+  const addItem = useCartStore((state) => state.addItem);
+  const items = useCartStore((state) => state.items);
+  const [addedToCart, setAddedToCart] = useState(false);
+
+  // Check if product is already in cart
+  const isInCart = items.some((item) => item.id === id);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    // TODO: Implement cart integration
-    console.log("Adding to cart:", product);
+    
+    // Add or update item in cart
+    addItem({
+      id,
+      name,
+      price: Number(price) || 0,
+      imageUrl,
+      quantity: 1
+    });
+    
+    // Show added animation
+    setAddedToCart(true);
+    toast.success(`${name} đã được thêm vào giỏ hàng`);
+    
+    // Reset animation after 1 second
+    setTimeout(() => {
+      setAddedToCart(false);
+    }, 1000);
   };
 
   return (
@@ -69,10 +95,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           <Button
             onClick={handleAddToCart}
-            className="ml-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors hover:bg-emerald-600 hover:text-white"
+            className={`ml-4 flex h-10 w-10 items-center justify-center rounded-full transition-colors ${addedToCart || isInCart ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
             aria-label="Add to cart"
+            disabled={!quantity}
           >
-            <PlusCircleIcon className="size-5" />
+            {addedToCart || isInCart ? (
+              <CheckCircleIcon className="size-5" />
+            ) : (
+              <PlusCircleIcon className="size-5" />
+            )}
           </Button>
         </div>
 

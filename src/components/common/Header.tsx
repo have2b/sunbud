@@ -1,11 +1,12 @@
 "use client";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useCartStore } from "@/hooks/useCartStore";
 import axios from "axios";
 import { ShoppingCartIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 
 const Header = () => {
@@ -13,6 +14,28 @@ const Header = () => {
   const expiresAt = useAuthStore((state) => state.expiresAt);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
+
+  // Get cart items count
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  const getTotalItems = useCartStore((state) => state.getTotalItems);
+
+  // Initialize cart store (needed for hydration)
+  useEffect(() => {
+    // Initialize the cart store and rehydrate from localStorage
+    if (typeof window !== "undefined") {
+      useCartStore.persist.rehydrate();
+      setCartItemsCount(getTotalItems());
+    }
+  }, [getTotalItems]);
+
+  // Update cart count when items change
+  useEffect(() => {
+    const unsubscribe = useCartStore.subscribe(() => {
+      setCartItemsCount(getTotalItems());
+    });
+
+    return () => unsubscribe();
+  }, [getTotalItems]);
 
   useEffect(() => {
     if (expiresAt && expiresAt < Date.now()) {
@@ -79,13 +102,14 @@ const Header = () => {
         )}
 
         {/* For cart */}
-        {/* TODO: Cart function */}
-        <div className="relative">
+        <Link href="/cart" className="relative">
           <ShoppingCartIcon className="size-5" />
-          <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-            0
-          </span>
-        </div>
+          {cartItemsCount > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+              {cartItemsCount > 99 ? "99+" : cartItemsCount}
+            </span>
+          )}
+        </Link>
       </div>
     </motion.header>
   );
