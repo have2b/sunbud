@@ -1,6 +1,9 @@
 import { createHash } from "crypto";
 import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { NextRequest, NextResponse } from "next/server";
+
+const timeZone = "Asia/Bangkok"; // GMT+7
 
 type PaymentParams = {
   vnp_Amount: number;
@@ -34,23 +37,24 @@ export async function POST(request: NextRequest) {
   const vnp_Amount = amount * 100;
   const vnp_OrderInfo = "Thanh toán đơn hàng";
   const vnp_OrderType = "other";
-  const vnp_CreateDate = format(new Date(), "yyyyMMddHHmmss");
+  const vnp_CreateDate = format(
+    toZonedTime(new Date(), timeZone),
+    "yyyyMMddHHmmss",
+  );
   const vnp_IpAddr = request.headers.get("x-forwarded-for") || "";
-  const vnp_TxnRef = format(new Date(), "HHmmss");
+  const vnp_TxnRef = format(toZonedTime(new Date(), timeZone), "HHmmss");
   const vnp_BankCode = "VNPAYQR";
   const vnp_CurrCode = "VND";
-  // Extract origin from request for dynamic return URL
   const origin =
     request.headers.get("origin") ||
     request.headers.get("referer") ||
     "http://localhost:3000";
   const vnp_ReturnUrl = new URL(origin).origin + "/";
   const vnp_ExpireDate = format(
-    new Date(Date.now() + 10 * 60 * 1000),
+    toZonedTime(new Date(Date.now() + 10 * 60 * 1000), timeZone),
     "yyyyMMddHHmmss",
   );
 
-  // Create a sorted payment parameter object without the hash secret
   const paymentParams: PaymentParams = {
     vnp_Amount,
     vnp_Command,
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
     })
     .join("&");
 
-  const vnp_SecureHash = createHash("sha256")
+  const vnp_SecureHash = createHash("sha512")
     .update(vnp_HashSecret + secureHashData)
     .digest("hex");
 
