@@ -11,8 +11,8 @@ datasource db {
 
 enum OrderStatus {
   PENDING
-  PROCESSING
-  SHIPPED
+  VERIFIED
+  SHIPPING
   DELIVERED
   CANCELLED
 }
@@ -20,19 +20,22 @@ enum OrderStatus {
 enum PaymentStatus {
   PENDING
   COMPLETED
-  FAILED
+  REJECTED
 }
 
 enum PaymentMethod {
-  CREDITCARD
-  ONLINEBANKING
-  CODE
+  BANK
+  CASH
 }
 
 enum ShippingStatus {
-  PREPARING
-  SHIPPED
+  SHIPPING
   DELIVERED
+}
+
+enum DeliveryMethod {
+  SHIPPING
+  PICKUP
 }
 
 enum Role {
@@ -57,6 +60,8 @@ model User {
   role         Role     @default(USER)
   otp          String
   isVerified   Boolean  @default(false)
+
+  orders Order[]
 }
 
 model Category {
@@ -82,4 +87,35 @@ model Product {
   updatedAt   DateTime @default(now())
 
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  items OrderItem[]
+}
+
+model Order {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  user           User           @relation(fields: [userId], references: [id])
+  status         OrderStatus    @default(PENDING)
+  paymentStatus  PaymentStatus  @default(PENDING)
+  paymentMethod  PaymentMethod  @default(BANK)
+  deliveryMethod DeliveryMethod @default(SHIPPING)
+  address        String?
+  phone          String?
+  totalAmount    Decimal        @db.Decimal(10, 2)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now())
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }

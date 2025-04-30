@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const afterTenMins = new Date();
   afterTenMins.setMinutes(afterTenMins.getMinutes() + 10);
 
-  const vnp_Amount = amount;
+  const vnp_Amount = Math.floor(amount);
   const vnp_OrderInfo = "Thanh toán đơn hàng";
 
   const vnp_CreateDate = dateFormat(toZonedTime(new Date(), timeZone));
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     request.headers.get("origin") ||
     request.headers.get("referer") ||
     "http://localhost:3000";
-  const vnp_ReturnUrl = new URL(origin).origin + "/";
+  const vnp_ReturnUrl = new URL(origin).origin + "/verify-payment";
 
   const vnpay = new VNPay({
     tmnCode: vnp_TmnCode!,
