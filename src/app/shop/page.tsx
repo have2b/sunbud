@@ -3,7 +3,7 @@ import { ProductList } from "@/components/shop/ProductList";
 
 const ShopPage = () => {
   return (
-    <div className="flex h-full min-h-0 w-full max-w-screen flex-1 justify-between gap-4 p-12">
+    <div className="flex h-full min-h-0 w-full max-w-screen flex-1 flex-row gap-8 p-12">
       {/* Contains 2 part: FilterSidebar and ProductList separate vertically */}
       <FilterSidebar />
       <ProductList />
