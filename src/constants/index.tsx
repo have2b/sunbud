@@ -61,6 +61,11 @@ export const adminSidebarItems = [
     icon: LayoutDashboardIcon,
   },
   {
+    title: "Tài khoản",
+    url: "/admin/user",
+    icon: UserIcon,
+  },
+  {
     title: "Danh mục",
     url: "/admin/category",
     icon: BlocksIcon,
@@ -71,8 +76,8 @@ export const adminSidebarItems = [
     icon: PackageIcon,
   },
   {
-    title: "Tài khoản",
-    url: "/admin/user",
-    icon: UserIcon,
+    title: "Đơn hàng",
+    url: "/admin/order",
+    icon: ShoppingCartIcon,
   },
 ];
