@@ -1,6 +1,11 @@
 "use client";
 import { GenericDataTable } from "@/components/common/GenericDatatable";
+import {
+  DetailField,
+  ItemDetailDialog,
+} from "@/components/common/ItemDetailDialog";
 import { Product } from "@/generated/prisma";
+import { useDetailDialog } from "@/hooks/useDetailDialog";
 import { UpdateProductSchema } from "@/validations/product.validation";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -11,6 +16,25 @@ import { createProductColumns } from "./product.columns";
 import { getProductFilterFields } from "./product.filter";
 
 export default function ProductDatatable() {
+  const dialog = useDetailDialog<Product>();
+
+  const detailFields: DetailField<Product>[] = [
+    { label: "Tên sản phẩm", key: "name" },
+    { label: "Mô tả", key: "description", className: "col-span-2" },
+    { label: "Giá", key: "price", render: (v) => `$${Number(v).toFixed(2)}` },
+    { label: "Danh mục", key: "category.name" },
+    { label: "Số lượng tồn", key: "quantity" },
+    {
+      label: "Ngày tạo",
+      key: "createdAt",
+      render: (v) => new Date(v).toLocaleDateString(),
+    },
+    {
+      label: "Ngày cập nhật",
+      key: "updatedAt",
+      render: (v) => new Date(v).toLocaleDateString(),
+    },
+  ];
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [publishProduct, setPublishProduct] = useState<Product | null>(null);
 
@@ -74,6 +98,13 @@ export default function ProductDatatable() {
         }}
         initialPageSize={10}
         meta={{ categories }}
+        onRowClick={dialog.openDialog}
+      />
+
+      <ItemDetailDialog
+        {...dialog.dialogProps}
+        fields={detailFields}
+        title="Chi tiết sản phẩm"
       />
     </>
   );

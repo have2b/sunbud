@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   if (idParam) {
     const product = await db.product.findFirst({
       where: { id: idParam },
+      include: { category: { select: { name: true } } },
     });
 
     if (!product) {
@@ -88,6 +89,7 @@ export async function GET(request: NextRequest) {
     db.product.count({ where: whereCondition }),
     db.product.findMany({
       where: whereCondition,
+      include: { category: { select: { name: true } } },
       orderBy: [{ isPublish: "desc" }, { name: "asc" }],
       skip: (page - 1) * limit,
       take: limit,

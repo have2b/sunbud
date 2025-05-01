@@ -1,7 +1,6 @@
 import { FilterField } from "@/components/common/FilterDialog";
 
-// Create a function that returns the filter fields with dynamic category options
-export const getOrderFilterFields = (): FilterField[] => [
+export const orderFilterFields: FilterField[] = [
   {
     key: "status",
     label: "Trạng thái",

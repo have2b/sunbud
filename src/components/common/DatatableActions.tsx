@@ -34,7 +34,7 @@ export function DataTableActions<TData>({
           <MoreHorizontal className="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
         {actions.map((action, index) => (
           <DropdownMenuItem
             key={index}

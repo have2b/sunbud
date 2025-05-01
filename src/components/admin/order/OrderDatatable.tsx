@@ -4,7 +4,7 @@ import { GenericDataTable } from "@/components/common/GenericDatatable";
 import { Order } from "@/generated/prisma";
 import { useState } from "react";
 import { createOrderColumns } from "./order.columns";
-import { getOrderFilterFields } from "./order.filter";
+import { orderFilterFields } from "./order.filter";
 import UpdateOrderForm from "./UpdateOrderForm";
 
 export default function OrderDatatable() {
@@ -16,11 +16,11 @@ export default function OrderDatatable() {
         <UpdateOrderForm order={editOrder} onClose={() => setEditOrder(null)} />
       )}
 
-      <GenericDataTable<Order>
+      <GenericDataTable
         queryKey="orders"
         apiPath="/api/admin/order"
         columns={createOrderColumns((order) => setEditOrder(order))}
-        filterFields={getOrderFilterFields()}
+        filterFields={orderFilterFields}
         searchableFields={{
           placeholder: "Tìm kiếm theo số đơn hàng...",
           onSearch: (input) => [{ field: "id", value: input }],

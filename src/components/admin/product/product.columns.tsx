@@ -1,19 +1,18 @@
 import { DataTableActions } from "@/components/common/DatatableActions";
-import { Category, Product } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 
-// Define the table meta type that includes categories
-type ProductTableMeta = {
-  categories: Category[];
-};
+type ProductWithCategory = Prisma.ProductGetPayload<{
+  include: { category: { select: { name: true } } };
+}>;
 
 export const createProductColumns = (
-  handleEdit: (product: Product) => void,
-  handlePublish: (product: Product) => void,
-): ColumnDef<Product>[] => [
+  handleEdit: (product: ProductWithCategory) => void,
+  handlePublish: (product: ProductWithCategory) => void,
+): ColumnDef<ProductWithCategory>[] => [
   {
     accessorKey: "imageUrl",
     header: "Hình ảnh",
@@ -55,19 +54,12 @@ export const createProductColumns = (
     ),
   },
   {
-    accessorKey: "categoryId",
+    id: "category",
+    accessorFn: (row) => row.category?.name,
     header: "Danh mục",
-    cell: ({ row, table }) => {
-      const categoryId = row.getValue("categoryId") as number | null;
-      // Access the categories data stored in the table meta
-      const categories =
-        (table.options.meta as ProductTableMeta)?.categories || [];
-      const category = categories.find((cat) => cat.id === categoryId);
-
-      return (
-        <span className="text-gray-700">{category ? category.name : "-"}</span>
-      );
-    },
+    cell: ({ row }) => (
+      <span className="text-gray-700">{row.getValue("category")}</span>
+    ),
   },
   {
     accessorKey: "isPublish",
@@ -86,27 +78,9 @@ export const createProductColumns = (
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Ngày tạo",
-    cell: ({ row }) => (
-      <div className="text-gray-500">
-        {new Date(row.getValue("createdAt")).toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "updatedAt",
-    header: "Ngày cập nhật",
-    cell: ({ row }) => (
-      <div className="text-gray-500">
-        {new Date(row.getValue("updatedAt")).toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
     id: "actions",
     cell: ({ row }) => (
-      <DataTableActions<Product>
+      <DataTableActions<ProductWithCategory>
         row={row}
         actions={[
           {

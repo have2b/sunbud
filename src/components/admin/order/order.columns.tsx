@@ -1,12 +1,16 @@
 import { DataTableActions } from "@/components/common/DatatableActions";
-import { Order } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 
+type OrderWithUser = Prisma.OrderGetPayload<{
+  include: { user: { select: { firstName: true; lastName: true } } };
+}>;
+
 export const createOrderColumns = (
-  handleEdit: (order: Order) => void,
-): ColumnDef<Order>[] => [
+  handleEdit: (order: OrderWithUser) => void,
+): ColumnDef<OrderWithUser>[] => [
   {
     accessorKey: "id",
     header: "Mã đơn hàng",
@@ -82,9 +86,17 @@ export const createOrderColumns = (
     ),
   },
   {
+    id: "user",
+    accessorFn: (row) => `${row.user?.firstName} ${row.user?.lastName}`,
+    header: "Khách hàng",
+    cell: ({ row }) => (
+      <span className="text-gray-700">{row.getValue("user")}</span>
+    ),
+  },
+  {
     id: "actions",
     cell: ({ row }) => (
-      <DataTableActions<Order>
+      <DataTableActions<OrderWithUser>
         row={row}
         actions={[
           {

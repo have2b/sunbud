@@ -68,24 +68,6 @@ export const createUserColumns = (
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Ngày tạo",
-    cell: ({ row }) => (
-      <div className="text-gray-500">
-        {new Date(row.getValue("createdAt")).toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "updatedAt",
-    header: "Ngày cập nhật",
-    cell: ({ row }) => (
-      <div className="text-gray-500">
-        {new Date(row.getValue("updatedAt")).toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
     id: "actions",
     cell: ({ row }) => (
       <DataTableActions<User>

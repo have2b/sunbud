@@ -69,7 +69,10 @@ export async function GET(request: NextRequest) {
     db.order.count({ where: whereCondition }),
     db.order.findMany({
       where: whereCondition,
-      include: { items: true },
+      include: {
+        items: true,
+        user: { select: { firstName: true, lastName: true } },
+      },
       orderBy: [{ createdAt: "desc" }],
       skip: (page - 1) * limit,
       take: limit,

@@ -47,7 +47,8 @@ interface GenericDataTableProps<T> {
     onSearch: (input: string) => FilterCondition[];
   };
   initialPageSize?: number;
-  meta?: Record<string, unknown>; // Add meta property for additional data
+  meta?: Record<string, unknown>;
+  onRowClick?: (item: T) => void;
 }
 
 export function GenericDataTable<T>({
@@ -58,6 +59,7 @@ export function GenericDataTable<T>({
   searchableFields,
   initialPageSize = 10,
   meta,
+  onRowClick,
 }: GenericDataTableProps<T>) {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -80,20 +82,24 @@ export function GenericDataTable<T>({
       try {
         setIsSubmitting(true);
         setApiError(null);
-        
+
         const params = new URLSearchParams({
           page: (pagination.pageIndex + 1).toString(),
           limit: pagination.pageSize.toString(),
         });
 
         filterConditions.forEach((condition) => {
-          const fieldConfig = filterFields.find((f) => f.key === condition.field);
+          const fieldConfig = filterFields.find(
+            (f) => f.key === condition.field,
+          );
 
           if (fieldConfig?.type === "number") {
             // Use custom parameter names if available, otherwise fall back to field_min/field_max format
-            const minParamName = condition.paramNames?.minParam || `${condition.field}_min`;
-            const maxParamName = condition.paramNames?.maxParam || `${condition.field}_max`;
-            
+            const minParamName =
+              condition.paramNames?.minParam || `${condition.field}_min`;
+            const maxParamName =
+              condition.paramNames?.maxParam || `${condition.field}_max`;
+
             if (condition.min !== undefined)
               params.set(minParamName, condition.min.toString());
             if (condition.max !== undefined)
@@ -110,25 +116,27 @@ export function GenericDataTable<T>({
         });
 
         const res = await fetch(`${apiPath}?${params}`);
-        
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
-          const errorMessage = errorData?.message || `Error ${res.status}: ${res.statusText}`;
+          const errorMessage =
+            errorData?.message || `Error ${res.status}: ${res.statusText}`;
           setApiError(errorMessage);
           throw new Error(errorMessage);
         }
-        
+
         const json = await res.json();
-        
+
         if (!json.success && json.message) {
           setApiError(json.message);
           throw new Error(json.message);
         }
-        
+
         return json.data;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-        console.error('API request failed:', errorMessage);
+        const errorMessage =
+          err instanceof Error ? err.message : "An unknown error occurred";
+        console.error("API request failed:", errorMessage);
         setApiError(errorMessage);
         throw err;
       } finally {
@@ -145,8 +153,6 @@ export function GenericDataTable<T>({
       setSearchInput(searchCondition ? String(searchCondition.value) : "");
     }
   }, [filterConditions, searchableFields]);
-
-
 
   const table = useReactTable({
     data: data?.data || [],
@@ -177,12 +183,21 @@ export function GenericDataTable<T>({
       {apiError && (
         <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
           <p className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                clipRule="evenodd"
+              />
             </svg>
             {apiError}
           </p>
-          <button 
+          <button
             onClick={() => {
               setApiError(null);
               refetch();
@@ -231,7 +246,7 @@ export function GenericDataTable<T>({
               <Search className="text-muted-foreground absolute top-2.5 left-2 size-5" />
             </div>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang tìm...' : 'Tìm kiếm'}
+              {isSubmitting ? "Đang tìm..." : "Tìm kiếm"}
             </Button>
           </form>
         )}
@@ -258,7 +273,11 @@ export function GenericDataTable<T>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-gray-50">
+              <TableRow
+                key={row.id}
+                className="hover:bg-gray-50"
+                onClick={() => onRowClick?.(row.original)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className="py-3">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
