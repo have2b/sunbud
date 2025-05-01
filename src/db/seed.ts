@@ -4,6 +4,7 @@ import {
   PaymentMethod,
   PaymentStatus,
   PrismaClient,
+  Role,
 } from "@/generated/prisma";
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
@@ -57,7 +58,7 @@ async function seedUsers(count = 100, batchSize = 20) {
       lastName,
       phone,
       avatarUrl: faker.image.avatar(),
-      role: "USER" as const,
+      role: Math.random() < 0.5 ? Role.USER : Role.SHIPPER,
       otp: faker.string.numeric(6),
       isVerified: faker.datatype.boolean(),
     });
