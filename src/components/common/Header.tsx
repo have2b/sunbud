@@ -82,6 +82,15 @@ const Header = () => {
             >
               Xin chào, {user.fullName}
             </Button>
+            <span className="text-white">|</span>
+            <Button
+              variant={"link"}
+              onClick={() => router.push("/orders")}
+              className="px-0 text-sm text-white"
+            >
+              ĐƠN HÀNG
+            </Button>
+            <span className="text-white">|</span>
             <Button
               variant={"link"}
               onClick={handleLogout}
@@ -91,14 +100,15 @@ const Header = () => {
             </Button>
           </div>
         ) : (
-          <>
+          <div className="flex items-center gap-2">
             <Link href="/login" className="text-sm">
               ĐĂNG NHẬP
             </Link>
+            <span className="text-white">|</span>
             <Link href="/register" className="text-sm">
               ĐĂNG KÝ
             </Link>
-          </>
+          </div>
         )}
 
         {/* For cart */}

@@ -20,7 +20,11 @@ export interface Order {
   userId: number;
   totalAmount: number;
   paymentMethod: string;
+  paymentStatus?: string;
   status?: string;
+  address?: string;
+  phone?: string;
+  deliveryMethod?: string;
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
