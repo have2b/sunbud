@@ -19,6 +19,8 @@ interface CartItemProps {
   onIncrease?: () => void;
   onDecrease?: () => void;
   onRemove?: () => void;
+  disableIncrease?: boolean;
+  stockQuantity?: number;
 }
 
 export const CartItem = ({
@@ -27,6 +29,8 @@ export const CartItem = ({
   onIncrease,
   onDecrease,
   onRemove,
+  disableIncrease = false,
+  stockQuantity,
 }: CartItemProps) => {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -85,6 +89,13 @@ export const CartItem = ({
         <p className="mt-1 text-sm text-gray-500">
           {formatPrice(item.price)} × {item.quantity}
         </p>
+        {stockQuantity !== undefined && (
+          <p className={`text-xs ${item.quantity >= stockQuantity ? 'text-rose-600 font-medium' : 'text-gray-500'}`}>
+            {item.quantity >= stockQuantity 
+              ? `Đạt giới hạn tồn kho (${stockQuantity})` 
+              : `Còn ${stockQuantity - item.quantity} sản phẩm có thể thêm`}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -102,6 +113,8 @@ export const CartItem = ({
           size="icon"
           className="h-8 w-8 rounded-full"
           onClick={handleIncreaseQuantity}
+          disabled={disableIncrease}
+          title={disableIncrease ? 'Đã đạt giới hạn tồn kho' : 'Tăng số lượng'}
         >
           <PlusCircleIcon className="h-4 w-4" />
         </Button>

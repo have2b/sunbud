@@ -56,9 +56,11 @@ const VerifyPaymentContent = () => {
       const response = await axios.post("/api/user/order", {
         items: orderItems,
         paymentMethod: "BANK",
+        paymentStatus: "COMPLETED",
         deliveryMethod,
         address: deliveryMethod === "SHIPPING" ? address : null,
         phone: deliveryMethod === "SHIPPING" ? phone : null,
+        totalAmount: Number(params.get("vnp_Amount")) / 100,
       });
 
       toast.dismiss(loadingToastId);
@@ -90,11 +92,13 @@ const VerifyPaymentContent = () => {
     params,
   ]);
 
+  // Ensure the store is hydrated once on mount
+  useEffect(() => {
+    useCartStore.persist.rehydrate();
+  }, []);
+
   // Handle payment response when component mounts
   useEffect(() => {
-    // Ensure the store is hydrated
-    useCartStore.persist.rehydrate();
-
     // Prevent handling the response multiple times
     if (hasHandledResponse) return;
 

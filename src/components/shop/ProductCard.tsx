@@ -30,6 +30,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     
+    // Check if product is already in cart and would exceed available stock
+    const existingItem = items.find((item) => item.id === id);
+    if (existingItem) {
+      // Check if adding one more would exceed stock
+      if (existingItem.quantity >= quantity) {
+        toast.error(`Không thể thêm, chỉ còn ${quantity} sản phẩm trong kho`);
+        return;
+      }
+    }
+    
     // Add or update item in cart
     addItem({
       id,
@@ -97,7 +107,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             onClick={handleAddToCart}
             className={`ml-4 flex h-10 w-10 items-center justify-center rounded-full transition-colors ${addedToCart || isInCart ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
             aria-label="Add to cart"
-            disabled={!quantity}
+            disabled={!quantity || (quantity === 1 && isInCart)}
           >
             {addedToCart || isInCart ? (
               <CheckCircleIcon className="size-5" />

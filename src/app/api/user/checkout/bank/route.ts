@@ -43,11 +43,6 @@ export async function POST(request: NextRequest) {
     enableLog: true,
   });
 
-  console.log("---------------------------------");
-  console.log("vnp_CreateDate: ", vnp_CreateDate);
-  console.log("vnp_ExpireDate: ", vnp_ExpireDate);
-  console.log("---------------------------------");
-
   const paymentUrl = vnpay.buildPaymentUrl(
     {
       vnp_Amount,

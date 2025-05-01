@@ -18,6 +18,8 @@ interface CartSummaryProps {
 export const CartSummary = ({ formatPrice }: CartSummaryProps) => {
   const router = useRouter();
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
+  const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
   const user = useAuthStore((state) => state.user);
 
   // Get cart state and actions from cart store
@@ -29,6 +31,9 @@ export const CartSummary = ({ formatPrice }: CartSummaryProps) => {
   );
   const savedAddress = useCartStore((state) => state.address);
   const savedDeliveryMethod = useCartStore((state) => state.deliveryMethod);
+
+  // Shipping fee constant (in VND)
+  const SHIPPING_FEE = 30000;
 
   // State for payment, delivery, and address options
   const [paymentMethod, setPaymentMethod] = useState<"BANK" | "CASH">("BANK");
@@ -45,6 +50,43 @@ export const CartSummary = ({ formatPrice }: CartSummaryProps) => {
     return String(address).trim() !== "" && String(phone).trim() !== "";
   };
 
+  // Create order for cash payment method
+  const createCashOrder = async () => {
+    try {
+      const loadingToastId = toast.loading("Đang xử lý đơn hàng...");
+
+      const orderItems = items.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      }));
+
+      const response = await axios.post("/api/user/order", {
+        items: orderItems,
+        paymentMethod: "CASH",
+        deliveryMethod,
+        address: deliveryMethod === "SHIPPING" ? address : null,
+        phone: deliveryMethod === "SHIPPING" ? phone : null,
+        totalAmount:
+          getTotalPrice() +
+          Number(deliveryMethod === "SHIPPING" ? SHIPPING_FEE : 0),
+      });
+
+      toast.dismiss(loadingToastId);
+
+      if (response.data.status === 200) {
+        // Order created successfully
+        clearCart();
+        toast.success("Đơn hàng đã được tạo thành công!");
+        router.push("/orders");
+      } else {
+        toast.error(response.data.message || "Có lỗi xảy ra khi tạo đơn hàng");
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.");
+    }
+  };
+
   const handleCheckout = async () => {
     // Check if user is logged in
     if (!user) {
@@ -56,42 +98,37 @@ export const CartSummary = ({ formatPrice }: CartSummaryProps) => {
     }
 
     try {
-      // Show loading toast
-      const loadingToastMessage =
-        paymentMethod === "BANK"
-          ? "Đang kết nối đến cổng thanh toán..."
-          : "Đang xử lý đơn hàng...";
-      const loadingToast = toast.loading(loadingToastMessage);
+      if (paymentMethod === "CASH") {
+        // For cash payment, create the order directly
+        await createCashOrder();
+      } else {
+        // For bank payment, proceed with the VNPay gateway
+        const loadingToast = toast.loading(
+          "Đang kết nối đến cổng thanh toán...",
+        );
 
-      // Make request to checkout API based on payment method
-      const endpoint =
-        paymentMethod === "BANK"
-          ? "api/user/checkout/bank"
-          : "api/user/checkout/cash";
-      const response = await axios.post(endpoint, {
-        amount: getTotalPrice(),
-        paymentMethod,
-        deliveryMethod,
-        address: deliveryMethod === "SHIPPING" ? String(address) : null,
-        phone: deliveryMethod === "SHIPPING" ? String(phone) : null,
-      });
-      toast.dismiss(loadingToast);
-      if (paymentMethod === "BANK") {
+        const totalAmount =
+          getTotalPrice() +
+          Number(deliveryMethod === "SHIPPING" ? SHIPPING_FEE : 0);
+        const response = await axios.post("api/user/checkout/bank", {
+          amount: totalAmount,
+          paymentMethod,
+          deliveryMethod,
+          address: deliveryMethod === "SHIPPING" ? String(address) : null,
+          phone: deliveryMethod === "SHIPPING" ? String(phone) : null,
+          shippingFee: deliveryMethod === "SHIPPING" ? SHIPPING_FEE : 0,
+        });
+
+        toast.dismiss(loadingToast);
+
         const { paymentUrl } = response.data;
         if (paymentUrl) {
           window.location.href = paymentUrl;
-          // TODO: handle bank payment case
         } else {
           toast.error(
             "Không thể kết nối đến cổng thanh toán. Vui lòng thử lại sau.",
           );
         }
-      } else {
-        // TODO: handle cash payment case
-        toast.success(
-          "Đơn hàng đã được xác nhận. Vui lòng thanh toán khi nhận hàng.",
-        );
-        router.push("/orders");
       }
     } catch (error) {
       console.error("Checkout error:", error);
@@ -111,12 +148,21 @@ export const CartSummary = ({ formatPrice }: CartSummaryProps) => {
 
         <div className="flex justify-between border-b border-gray-100 pb-2">
           <span className="text-gray-600">Phí vận chuyển</span>
-          <span className="text-emerald-600">Miễn phí</span>
+          {deliveryMethod === "SHIPPING" ? (
+            <span>{formatPrice(SHIPPING_FEE)}</span>
+          ) : (
+            <span className="text-emerald-600">Miễn phí</span>
+          )}
         </div>
 
         <div className="flex justify-between pt-2">
           <span className="font-medium">Tổng cộng</span>
-          <span className="font-medium">{formatPrice(getTotalPrice())}</span>
+          <span className="font-medium">
+            {formatPrice(
+              getTotalPrice() +
+                (deliveryMethod === "SHIPPING" ? SHIPPING_FEE : 0),
+            )}
+          </span>
         </div>
       </div>
 

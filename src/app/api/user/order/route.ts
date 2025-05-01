@@ -1,6 +1,7 @@
 import {
   DeliveryMethod,
   PaymentMethod,
+  PaymentStatus,
   PrismaClient,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
@@ -47,8 +48,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const { items, paymentMethod, address, phone, deliveryMethod } =
-      await request.json();
+    const {
+      items,
+      paymentMethod,
+      address,
+      phone,
+      deliveryMethod,
+      paymentStatus,
+      totalAmount,
+    } = await request.json();
 
     // Validate request
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -87,7 +95,6 @@ export async function POST(request: NextRequest) {
       quantity: number;
       price: (typeof products)[0]["price"]; // Using the same type as in the Product model
     }> = [];
-    let totalAmount = 0;
 
     for (const item of items) {
       const product = products.find((p) => p.id === item.productId);
@@ -114,9 +121,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const itemPrice = parseFloat(product.price.toString()) * item.quantity;
-      totalAmount += itemPrice;
-
       orderItems.push({
         productId: item.productId,
         quantity: item.quantity,
@@ -129,15 +133,19 @@ export async function POST(request: NextRequest) {
       // Create order
       const newOrder = await tx.order.create({
         data: {
-          userId: user.id,
           totalAmount,
           paymentMethod: (paymentMethod as PaymentMethod) || PaymentMethod.BANK,
+          paymentStatus:
+            (paymentStatus as PaymentStatus) || PaymentStatus.PENDING,
           address,
           phone,
           deliveryMethod:
             (deliveryMethod as DeliveryMethod) || DeliveryMethod.SHIPPING,
           items: {
             create: orderItems,
+          },
+          user: {
+            connect: { id: user.id },
           },
         },
         include: {
