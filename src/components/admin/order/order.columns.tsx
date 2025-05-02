@@ -1,6 +1,5 @@
 import { DataTableActions } from "@/components/common/DatatableActions";
 import { Prisma } from "@/generated/prisma";
-import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 
@@ -34,29 +33,6 @@ export const createOrderColumns = (
           style: "currency",
           currency: "VND",
         })}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "paymentMethod",
-    header: "Phương thức thanh toán",
-    cell: ({ row }) => (
-      <span className="text-gray-700">{row.getValue("paymentMethod")}</span>
-    ),
-  },
-  {
-    accessorKey: "paymentStatus",
-    header: "Trạng thái",
-    cell: ({ row }) => (
-      <span
-        className={cn(
-          "rounded-full px-3 py-1 text-sm",
-          row.getValue("paymentStatus")
-            ? "bg-green-100 text-green-800"
-            : "bg-red-100 text-red-800",
-        )}
-      >
-        {row.getValue("paymentStatus") ? "Hiển thị" : "Ẩn"}
       </span>
     ),
   },

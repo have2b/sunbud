@@ -2,13 +2,13 @@ import * as v from "valibot";
 
 export const updateOrderSchema = v.object({
   id: v.number(),
-  totalAmount: v.pipe(
-    v.number(),
-    v.minValue(0, "Giá phải lớn hơn hoặc bằng 0"),
-  ),
-  paymentMethod: v.string(),
   paymentStatus: v.string(),
+  paymentMethod: v.string(),
+  shippingStatus: v.string(),
   deliveryMethod: v.string(),
+  status: v.string(),
+  address: v.string(),
+  phone: v.string(),
 });
 
 export type UpdateOrderSchema = v.InferOutput<typeof updateOrderSchema>;

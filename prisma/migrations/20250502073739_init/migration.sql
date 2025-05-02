@@ -71,6 +71,7 @@ CREATE TABLE "Order" (
     "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "paymentMethod" "PaymentMethod" NOT NULL DEFAULT 'BANK',
     "deliveryMethod" "DeliveryMethod" NOT NULL DEFAULT 'SHIPPING',
+    "shippingStatus" "ShippingStatus" NOT NULL DEFAULT 'SHIPPING',
     "address" TEXT,
     "phone" TEXT,
     "totalAmount" DECIMAL(10,2) NOT NULL,

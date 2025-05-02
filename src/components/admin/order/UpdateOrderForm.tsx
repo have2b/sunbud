@@ -22,9 +22,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 
-import { Order } from "@/generated/prisma";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DeliveryMethod,
+  Order,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+  ShippingStatus,
+} from "@/generated/prisma";
 import {
   updateOrderSchema,
   UpdateOrderSchema,
@@ -46,10 +60,13 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
     resolver: valibotResolver(updateOrderSchema),
     defaultValues: {
       id: order.id,
-      totalAmount: Number(order.totalAmount),
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,
       deliveryMethod: order.deliveryMethod,
+      shippingStatus: order.shippingStatus,
+      status: order.status,
+      address: order.address || "",
+      phone: order.phone || "",
     },
   });
 
@@ -57,10 +74,13 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
     if (order) {
       form.reset({
         id: order.id,
-        totalAmount: Number(order.totalAmount),
         paymentMethod: order.paymentMethod,
         paymentStatus: order.paymentStatus,
         deliveryMethod: order.deliveryMethod,
+        shippingStatus: order.shippingStatus,
+        status: order.status,
+        address: order.address || "",
+        phone: order.phone || "",
       });
       setOpen(true);
     }
@@ -107,28 +127,182 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
             {/* hidden id field */}
             <input type="hidden" {...form.register("id")} />
 
-            <FormField
-              control={form.control}
-              name="totalAmount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Tổng tiền</FormLabel>
-                  <FormControl>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Địa chỉ</FormLabel>
                     <Input
-                      type="number"
-                      step="0.01"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === "" ? "" : Number(e.target.value),
-                        )
-                      }
+                      placeholder="Địa chỉ"
+                      className="w-full"
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Số điện thoại</FormLabel>
+                    <Input
+                      {...field}
+                      placeholder="Số điện thoại"
+                      className="w-full"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Phương thức thanh toán</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Phương thức thanh toán" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(PaymentMethod).map((method) => (
+                          <SelectItem key={method} value={method}>
+                            {method}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Phương thức thanh toán</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Phương thức thanh toán" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(PaymentMethod).map((method) => (
+                          <SelectItem key={method} value={method}>
+                            {method}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Trạng thái thanh toán</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Trạng thái thanh toán" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(PaymentStatus).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="deliveryMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Phương thức giao hàng</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Phương thức giao hàng" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(DeliveryMethod).map((method) => (
+                          <SelectItem key={method} value={method}>
+                            {method}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="shippingStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Trạng thái giao hàng</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn danh mục" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(ShippingStatus).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Trạng thái đơn hàng</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn danh mục" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(OrderStatus).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="flex justify-end gap-4">
               <Button

@@ -5,6 +5,7 @@ import {
   PaymentStatus,
   Prisma,
   PrismaClient,
+  ShippingStatus,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import { NextRequest, NextResponse } from "next/server";
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
       where: whereCondition,
       include: {
         items: true,
-        user: { select: { firstName: true, lastName: true } },
+        user: { select: { firstName: true, lastName: true, phone: true } },
       },
       orderBy: [{ createdAt: "desc" }],
       skip: (page - 1) * limit,
@@ -137,21 +138,20 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const {
     id,
-    userId,
     status,
     paymentStatus,
     paymentMethod,
     deliveryMethod,
+    shippingStatus,
     address,
     phone,
-    totalAmount,
   } = await request.json();
-  if (!id || !userId || !totalAmount) {
+  if (!id) {
     return NextResponse.json(
       makeResponse({
         status: 400,
         data: {},
-        message: "ID, userId và totalAmount là bắt buộc",
+        message: "ID là bắt buộc",
       }),
       { status: 400 },
     );
@@ -161,14 +161,13 @@ export async function PUT(request: NextRequest) {
     updated = await db.order.update({
       where: { id: Number(id) },
       data: {
-        userId: Number(userId),
         status: status as OrderStatus,
         paymentStatus: paymentStatus as PaymentStatus,
         paymentMethod: paymentMethod as PaymentMethod,
         deliveryMethod: deliveryMethod as DeliveryMethod,
+        shippingStatus: shippingStatus as ShippingStatus,
         address,
         phone,
-        totalAmount: totalAmount.toString(),
       },
     });
   } catch {
