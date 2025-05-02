@@ -1,21 +1,21 @@
 import { AppSidebar } from "@/components/admin/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { adminSidebarItems } from "@/constants";
+import { shipperSidebarItems } from "@/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blossomy Admin",
+  title: "Blossomy Shipper",
   description: "Flower online store",
 };
 
-export default function AdminLayout({
+export default function ShipperLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <SidebarProvider>
-      <AppSidebar items={adminSidebarItems} />
+      <AppSidebar items={shipperSidebarItems} />
       <main className="h-screen w-full p-4">{children}</main>
     </SidebarProvider>
   );

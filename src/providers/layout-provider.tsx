@@ -14,6 +14,7 @@ export const LayoutProvider = ({ children }: LayoutProviderProps) => {
 
   // Check if the current path is admin or auth path
   const isAdminPath = pathname.startsWith("/admin");
+  const isShipperPath = pathname.startsWith("/shipper");
   // Check if we're in any of the auth routes (login, register, forgot-password, otp)
   const isAuthPath =
     pathname === "/login" ||
@@ -23,10 +24,11 @@ export const LayoutProvider = ({ children }: LayoutProviderProps) => {
     pathname.startsWith("/login/") ||
     pathname.startsWith("/register/") ||
     pathname.startsWith("/forgot-password/") ||
-    pathname.startsWith("/otp/");
+    pathname.startsWith("/otp/") ||
+    pathname.startsWith("/shipper/");
 
   // Only show Header and Navigation if not in admin or auth paths
-  const showHeaderAndNav = !isAdminPath && !isAuthPath;
+  const showHeaderAndNav = !isAdminPath && !isAuthPath && !isShipperPath;
 
   return (
     <>

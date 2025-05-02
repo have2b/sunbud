@@ -12,3 +12,12 @@ export const updateOrderSchema = v.object({
 });
 
 export type UpdateOrderSchema = v.InferOutput<typeof updateOrderSchema>;
+
+export const updateShipperOrderSchema = v.object({
+  id: v.number(),
+  shippingStatus: v.string(),
+});
+
+export type UpdateShipperOrderSchema = v.InferOutput<
+  typeof updateShipperOrderSchema
+>;

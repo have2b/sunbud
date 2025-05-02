@@ -4,3 +4,9 @@ export interface BaseResponse {
   message: string;
   data: object;
 }
+
+export interface SidebarMenuItem {
+  title: string;
+  url: string;
+  icon: React.ReactNode;
+}

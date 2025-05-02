@@ -20,8 +20,9 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { adminDropdownItems, adminSidebarItems } from "@/constants";
+import { adminDropdownItems } from "@/constants";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { SidebarMenuItem as SidebarMenuItemType } from "@/types/common";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +30,7 @@ import { usePathname } from "next/navigation";
 import SearchForm from "../common/SearchForm";
 import { Button } from "../ui/button";
 
-function AdminAvatarDropdown() {
+function AppAvatarDropdown() {
   const { state } = useSidebar();
 
   const user = useAuthStore((state) => state.user);
@@ -87,7 +88,7 @@ function AdminAvatarDropdown() {
   );
 }
 
-export function AdminSidebar() {
+export function AppSidebar({ items }: { items: SidebarMenuItemType[] }) {
   const { state } = useSidebar();
   const pathname = usePathname();
 
@@ -140,7 +141,7 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminSidebarItems.map((item) => {
+              {items.map((item) => {
                 const isActive = isRouteActive(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -150,9 +151,7 @@ export function AdminSidebar() {
                       className={`hover:bg-rose-200 ${isActive ? "bg-rose-300 font-medium text-rose-800" : ""}`}
                     >
                       <Link href={item.url}>
-                        <item.icon
-                          className={`shrink-0 ${isActive ? "text-rose-800" : ""}`}
-                        />
+                        {item.icon}
                         <span className="text-base">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -164,9 +163,8 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex w-full flex-col border-t-[1px] border-rose-400 bg-rose-100 py-2">
-        {/* Admin Avatar Dropdown */}
         <div className="mb-2 flex w-full justify-center">
-          <AdminAvatarDropdown />
+          <AppAvatarDropdown />
         </div>
         <SidebarTrigger className="self-center rounded-full p-2 transition-colors duration-200 hover:bg-rose-200 hover:text-rose-600" />
       </SidebarFooter>

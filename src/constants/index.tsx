@@ -1,3 +1,4 @@
+import { SidebarMenuItem } from "@/types/common";
 import {
   BlocksIcon,
   LayoutDashboardIcon,
@@ -54,30 +55,43 @@ export const mainNavItems = [
   { label: "Sản phẩm", href: "/shop" },
 ];
 
-export const adminSidebarItems = [
+export const adminSidebarItems: SidebarMenuItem[] = [
   {
     title: "Bảng điều khiển",
     url: "/admin/dashboard",
-    icon: LayoutDashboardIcon,
+    icon: <LayoutDashboardIcon />,
   },
   {
     title: "Tài khoản",
     url: "/admin/user",
-    icon: UserIcon,
+    icon: <UserIcon />,
   },
   {
     title: "Danh mục",
     url: "/admin/category",
-    icon: BlocksIcon,
+    icon: <BlocksIcon />,
   },
   {
     title: "Sản phẩm",
     url: "/admin/product",
-    icon: PackageIcon,
+    icon: <PackageIcon />,
   },
   {
     title: "Đơn hàng",
     url: "/admin/order",
-    icon: ShoppingCartIcon,
+    icon: <ShoppingCartIcon />,
+  },
+];
+
+export const shipperSidebarItems: SidebarMenuItem[] = [
+  {
+    title: "Đơn hàng",
+    url: "/shipper/order",
+    icon: <ShoppingCartIcon />,
+  },
+  {
+    title: "Lịch sử giao hàng",
+    url: "/shipper/history",
+    icon: <ShoppingCartIcon />,
   },
 ];
