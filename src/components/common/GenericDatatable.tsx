@@ -49,6 +49,7 @@ interface GenericDataTableProps<T> {
   initialPageSize?: number;
   meta?: Record<string, unknown>;
   onRowClick?: (item: T) => void;
+  initialParams?: Record<string, string>;
 }
 
 export function GenericDataTable<T>({
@@ -60,6 +61,7 @@ export function GenericDataTable<T>({
   initialPageSize = 10,
   meta,
   onRowClick,
+  initialParams,
 }: GenericDataTableProps<T>) {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -83,10 +85,10 @@ export function GenericDataTable<T>({
         setIsSubmitting(true);
         setApiError(null);
 
-        const params = new URLSearchParams({
-          page: (pagination.pageIndex + 1).toString(),
-          limit: pagination.pageSize.toString(),
-        });
+        const params = new URLSearchParams(initialParams || {});
+
+        params.set("page", (pagination.pageIndex + 1).toString());
+        params.set("limit", pagination.pageSize.toString());
 
         filterConditions.forEach((condition) => {
           const fieldConfig = filterFields.find(

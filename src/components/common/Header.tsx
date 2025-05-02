@@ -76,7 +76,13 @@ const Header = () => {
             <Button
               variant={"link"}
               onClick={() =>
-                router.push(user.role === "ADMIN" ? "/admin" : "/profile")
+                router.push(
+                  user.role === "ADMIN"
+                    ? "/admin"
+                    : user.role === "SHIPPER"
+                      ? "/shipper"
+                      : "/profile",
+                )
               }
               className="px-0 text-sm text-white"
             >

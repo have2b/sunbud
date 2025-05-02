@@ -4,31 +4,21 @@ import {
   DetailField,
   ItemDetailDialog,
 } from "@/components/common/ItemDetailDialog";
-import { Order, OrderItem, ShippingStatus } from "@/generated/prisma";
+import { Order, OrderItem } from "@/generated/prisma";
 import { useDetailDialog } from "@/hooks/useDetailDialog";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { createShipperOrderColumns } from "./shipperOrder.columns";
 import { shipperOrderFilterFields } from "./shipperOrder.filter";
 import UpdateOrderForm from "./ShipperUpdateOrderForm";
 
 interface ShipperOrderDatatableProps {
-  initialShippingStatus?: ShippingStatus;
+  initialShippingStatus?: string;
 }
 
-export default function ShipperOrderDatatable({ 
-  initialShippingStatus 
-}: ShipperOrderDatatableProps = {}) {
+export default function ShipperOrderDatatable({
+  initialShippingStatus,
+}: ShipperOrderDatatableProps) {
   const dialog = useDetailDialog<Order>();
-  const queryClient = useQueryClient();
-  
-  // Set up the shipping status filter when the component mounts
-  useEffect(() => {
-    if (initialShippingStatus) {
-      // Force a refetch with the shipping status parameter by invalidating the query
-      queryClient.invalidateQueries({ queryKey: ["shipperOrders"] });
-    }
-  }, [initialShippingStatus, queryClient]);
 
   const detailFields: DetailField<Order>[] = [
     { label: "ID", key: "id" },
@@ -75,7 +65,7 @@ export default function ShipperOrderDatatable({
 
       <GenericDataTable
         queryKey="shipperOrders"
-        apiPath={initialShippingStatus ? `/api/shipper/order?shippingStatus=${initialShippingStatus}` : "/api/shipper/order"}
+        apiPath="/api/shipper/order"
         columns={createShipperOrderColumns((order) => setEditOrder(order))}
         filterFields={shipperOrderFilterFields}
         searchableFields={{
@@ -83,8 +73,10 @@ export default function ShipperOrderDatatable({
           onSearch: (input) => [{ field: "id", value: input }],
         }}
         initialPageSize={10}
+        initialParams={{
+          shippingStatus: initialShippingStatus || "",
+        }}
         onRowClick={dialog.openDialog}
-        meta={{ shippingStatus: initialShippingStatus }}
       />
 
       <ItemDetailDialog
