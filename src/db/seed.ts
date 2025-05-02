@@ -115,7 +115,7 @@ async function seedProducts(
 async function seedOrders(count = 100, batchSize = 20) {
   // Get all user IDs from the database
   const users = await prisma.user.findMany({
-    select: { id: true },
+    select: { id: true, role: true },
   });
 
   if (users.length === 0) {
@@ -130,6 +130,9 @@ async function seedOrders(count = 100, batchSize = 20) {
 
     rows.push({
       userId: randomUser.id,
+      shipperId: users
+        .filter((user) => user.role === Role.SHIPPER)
+        .map((user) => user.id)[Math.floor(Math.random() * users.length)],
       status: faker.helpers.enumValue(OrderStatus),
       paymentStatus: faker.helpers.enumValue(PaymentStatus),
       paymentMethod: faker.helpers.enumValue(PaymentMethod),

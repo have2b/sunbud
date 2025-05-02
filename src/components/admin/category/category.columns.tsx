@@ -1,4 +1,3 @@
-// components/admin/category/columns.ts
 import { DataTableActions } from "@/components/common/DatatableActions";
 import { Category } from "@/generated/prisma";
 import { cn } from "@/lib/utils";

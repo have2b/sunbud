@@ -16,7 +16,16 @@ export default function OrderDatatable() {
 
   const detailFields: DetailField<Order>[] = [
     { label: "ID", key: "id" },
-    { label: "Người mua", key: "user.firstName" },
+    {
+      label: "Người mua",
+      key: "user",
+      render: (user) => `${user.firstName} ${user.lastName}`,
+    },
+    {
+      label: "Shipper",
+      key: "shipper",
+      render: (shipper) => `${shipper.firstName} ${shipper.lastName}`,
+    },
     { label: "Trạng thái", key: "status" },
     { label: "Phương thức thanh toán", key: "paymentMethod" },
     { label: "Phương thức giao hàng", key: "deliveryMethod" },

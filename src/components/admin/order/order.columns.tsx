@@ -4,7 +4,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 
 type OrderWithUser = Prisma.OrderGetPayload<{
-  include: { user: { select: { firstName: true; lastName: true } } };
+  include: {
+    user: { select: { firstName: true; lastName: true } };
+    shipper: { select: { firstName: true; lastName: true } };
+  };
 }>;
 
 export const createOrderColumns = (
@@ -67,6 +70,15 @@ export const createOrderColumns = (
     header: "Khách hàng",
     cell: ({ row }) => (
       <span className="text-gray-700">{row.getValue("user")}</span>
+    ),
+  },
+  {
+    id: "shipper",
+    accessorFn: (row) =>
+      `${row.shipper ? `${row.shipper?.firstName} ${row.shipper?.lastName}` : ""}`,
+    header: "Shipper",
+    cell: ({ row }) => (
+      <span className="text-gray-700">{row.getValue("shipper")}</span>
     ),
   },
   {

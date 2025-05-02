@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
       include: {
         items: true,
         user: { select: { firstName: true, lastName: true, phone: true } },
+        shipper: { select: { firstName: true, lastName: true, phone: true } },
       },
       orderBy: [{ createdAt: "desc" }],
       skip: (page - 1) * limit,

@@ -22,6 +22,11 @@ export const orderFilterFields: FilterField[] = [
     type: "string",
   },
   {
+    key: "shippingStatus",
+    label: "Trạng thái giao hàng",
+    type: "string",
+  },
+  {
     key: "totalAmount",
     label: "Giá",
     type: "number",
