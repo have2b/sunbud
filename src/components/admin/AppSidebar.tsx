@@ -20,21 +20,34 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { adminDropdownItems } from "@/constants";
+import { sidebarDropdownItems } from "@/constants";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { SidebarMenuItem as SidebarMenuItemType } from "@/types/common";
-import { SearchIcon } from "lucide-react";
+import axios from "axios";
+import { LogOut, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import SearchForm from "../common/SearchForm";
 import { Button } from "../ui/button";
 
 function AppAvatarDropdown() {
   const { state } = useSidebar();
-
+  const router = useRouter();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const user = useAuthStore((state) => state.user);
   if (!user) return null;
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("/api/logout");
+    } catch (error) {
+      console.error(error);
+    }
+    clearAuth();
+    router.push("/login");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="flex w-full justify-center">
@@ -71,7 +84,7 @@ function AppAvatarDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {adminDropdownItems.map((item) => (
+        {sidebarDropdownItems.map((item) => (
           <DropdownMenuItem
             asChild
             key={item.label}
@@ -83,6 +96,15 @@ function AppAvatarDropdown() {
             </Link>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuItem asChild key="Đăng xuất" className="text-red-500">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2"
+          >
+            <LogOut className="size-4 text-red-500" />
+            <span>Đăng xuất</span>
+          </button>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

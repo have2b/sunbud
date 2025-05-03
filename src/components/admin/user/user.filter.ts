@@ -27,6 +27,11 @@ export const userFilterFields: FilterField[] = [
     type: "string",
   },
   {
+    key: "role",
+    label: "Vai trò",
+    type: "string",
+  },
+  {
     key: "isVerified",
     label: "Trạng thái",
     type: "boolean",

@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@/generated/prisma";
+import { Prisma, PrismaClient, Role } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
   const limit = Number(searchParams.get("limit")) || 10;
   const username = searchParams.get("username");
   const email = searchParams.get("email");
+  const role = searchParams.get("role");
   const firstName = searchParams.get("firstName");
   const lastName = searchParams.get("lastName");
   const phone = searchParams.get("phone");
@@ -48,6 +49,10 @@ export async function GET(request: NextRequest) {
   const where: Prisma.UserWhereInput = {
     role: { in: ["USER", "SHIPPER"] },
   };
+
+  if (role) {
+    where.role = role.toUpperCase() as Role;
+  }
 
   // Handle general search (used when both username and firstName have the same value)
   if (username && firstName && username === firstName) {
@@ -162,13 +167,36 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { id, email, password, firstName, lastName, phone, avatarUrl } =
+    const { id, email, password, firstName, lastName, phone, avatarUrl, role } =
       await request.json();
 
     if (!id) {
       return NextResponse.json(
         makeResponse({ status: 400, data: {}, message: "ID là bắt buộc" }),
         { status: 400 },
+      );
+    }
+
+    // Get the current user to check role change
+    const currentUser = await db.user.findUnique({
+      where: { id },
+      include: {
+        shippedOrders: {
+          where: {
+            shippingStatus: "SHIPPING",
+          },
+        },
+      },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json(
+        makeResponse({
+          status: 404,
+          data: {},
+          message: "Người dùng không tồn tại",
+        }),
+        { status: 404 },
       );
     }
 
@@ -179,6 +207,29 @@ export async function PUT(request: NextRequest) {
       phone,
       avatarUrl: avatarUrl || null,
     };
+
+    if (role && role !== currentUser.role) {
+      if (
+        currentUser.role === "SHIPPER" &&
+        currentUser.shippedOrders.length > 0
+      ) {
+        return NextResponse.json(
+          makeResponse({
+            status: 400,
+            data: {},
+            message:
+              "Tài khoản này đang có đơn hàng đang giao. Vui lòng hoàn tất hoặc chuyển giao đơn hàng trước khi thay đổi vai trò",
+          }),
+          { status: 400 },
+        );
+      }
+      dataToUpdate.role = role;
+
+      // Auto set isVerified to false when role is changed to SHIPPER
+      if (role === "SHIPPER") {
+        dataToUpdate.isVerified = false;
+      }
+    }
 
     if (password) {
       dataToUpdate.passwordHash = await bcrypt.hash(password, 10);

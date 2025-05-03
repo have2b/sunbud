@@ -12,6 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface VerifyUserFormProps {
@@ -22,17 +23,29 @@ interface VerifyUserFormProps {
 const VerifyUserForm: React.FC<VerifyUserFormProps> = ({ user, onClose }) => {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [selectedRole, setSelectedRole] = useState<string>(user.role as string);
+
+  const form = useForm({
+    defaultValues: {
+      role: user.role as string,
+    },
+  });
 
   useEffect(() => {
     if (user) {
       setOpen(true);
+      setSelectedRole(user.role as string);
+      form.reset({
+        role: user.role as string,
+      });
     }
-  }, [user]);
+  }, [user, form]);
 
   const publishMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.put("/api/admin/publish/user", {
         id: user.id,
+        role: selectedRole,
       });
       return response.data;
     },

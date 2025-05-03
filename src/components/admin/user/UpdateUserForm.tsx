@@ -23,6 +23,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { User } from "@/generated/prisma";
 import {
@@ -48,6 +55,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ user, onClose }) => {
       firstName: user.firstName,
       lastName: user.lastName,
       phone: user.phone,
+      role: user.role as string,
     },
   });
 
@@ -60,6 +68,7 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ user, onClose }) => {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
+        role: user.role as string,
       });
       setOpen(true);
     }
@@ -190,6 +199,33 @@ const UpdateUserForm: React.FC<UpdateUserFormProps> = ({ user, onClose }) => {
                   <FormControl>
                     <Input placeholder="Nhập số điện thoại..." {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vai trò</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn vai trò" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="USER">Người dùng</SelectItem>
+                      <SelectItem value="SHIPPER">Người giao hàng</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

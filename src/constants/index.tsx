@@ -41,13 +41,8 @@ export const avatarDropdownItems = [
   },
 ] as const;
 
-export const adminDropdownItems = [
+export const sidebarDropdownItems = [
   { label: "Thông tin cá nhân", href: "/account", icon: <UserIcon /> },
-  {
-    label: "Đăng xuất",
-    href: "/logout",
-    icon: <LogOutIcon className="text-red-500" />,
-  },
 ];
 
 export const mainNavItems = [

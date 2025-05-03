@@ -24,6 +24,8 @@ export const updateUserSchema = v.object({
   firstName: v.string(),
   lastName: v.string(),
   phone: v.string(),
+  role: v.optional(v.string()),
+  password: v.optional(v.string()),
 });
 
 export type UpdateUserSchema = v.InferOutput<typeof updateUserSchema>;
