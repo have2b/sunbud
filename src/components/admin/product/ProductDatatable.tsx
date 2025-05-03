@@ -22,7 +22,11 @@ export default function ProductDatatable() {
     { label: "Tên sản phẩm", key: "name" },
     { label: "Mô tả", key: "description", className: "col-span-2" },
     { label: "Giá", key: "price", render: (v) => `$${Number(v).toFixed(2)}` },
-    { label: "Danh mục", key: "category.name" },
+    { 
+      label: "Danh mục", 
+      key: "category",
+      render: (v) => v?.name || "Không có danh mục",
+    },
     { label: "Số lượng tồn", key: "quantity" },
     {
       label: "Ngày tạo",

@@ -73,14 +73,19 @@ const PublishProductForm: React.FC<PublishProductFormProps> = ({
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p>
-            Bạn có chắc chắn muốn {product.isPublish ? "ẩn" : "hiển thị"} sản
-            phẩm &ldquo;
-            <strong>{product.name}</strong>&rdquo;?
-          </p>
-          {product.isPublish && (
-            <p className="mt-2 text-red-600">
-              Lưu ý: Sản phẩm sẽ không hiển thị trên trang chủ sau khi bị ẩn.
+          {product.isPublish ? (
+            <>
+              <p className="text-red-600 font-medium mb-2">
+                Sản phẩm sẽ không hiển thị trong cửa hàng trực tuyến nếu bạn chọn trạng thái này. Bạn có chắc chắn không?
+              </p>
+              <p>
+                Sản phẩm &ldquo;<strong>{product.name}</strong>&rdquo; sẽ không hiển thị trên trang chủ sau khi bị ẩn.
+              </p>
+            </>
+          ) : (
+            <p>
+              Bạn có chắc chắn muốn hiển thị sản phẩm &ldquo;
+              <strong>{product.name}</strong>&rdquo;?
             </p>
           )}
         </div>
@@ -93,7 +98,7 @@ const PublishProductForm: React.FC<PublishProductFormProps> = ({
             }}
             disabled={publishMutation.isPending}
           >
-            Hủy
+            {product.isPublish ? "Không" : "Hủy"}
           </Button>
           <Button
             className={`text-white ${!product.isPublish ? "bg-green-600" : "bg-red-600"} hover:${!product.isPublish ? "bg-green-700" : "bg-red-700"}`}
@@ -103,7 +108,7 @@ const PublishProductForm: React.FC<PublishProductFormProps> = ({
             {publishMutation.isPending
               ? "Đang xử lý..."
               : product.isPublish
-                ? "Ẩn sản phẩm"
+                ? "Có"
                 : "Hiển thị sản phẩm"}
           </Button>
         </div>

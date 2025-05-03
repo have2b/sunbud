@@ -130,6 +130,34 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+  
+  // Check if name exceeds 255 characters
+  if (name.length > 255) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên sản phẩm không được vượt quá 255 ký tự",
+      }),
+      { status: 400 },
+    );
+  }
+
+  // Check for duplicate name
+  const existingProduct = await db.product.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+  });
+
+  if (existingProduct) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên sản phẩm không hợp lệ hoặc đã tồn tại. Vui lòng kiểm tra.",
+      }),
+      { status: 400 },
+    );
+  }
 
   const inserted = await db.product.create({
     data: {
@@ -175,6 +203,53 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
+  
+  // Check if name exceeds 255 characters
+  if (name.length > 255) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên sản phẩm không được vượt quá 255 ký tự",
+      }),
+      { status: 400 },
+    );
+  }
+  
+  // Check if the product exists
+  const existingProduct = await db.product.findUnique({
+    where: { id },
+  });
+  
+  if (!existingProduct) {
+    return NextResponse.json(
+      makeResponse({
+        status: 404,
+        data: {},
+        message: "Sản phẩm không tồn tại",
+      }),
+      { status: 404 },
+    );
+  }
+  
+  // Check for duplicate name (excluding the current product)
+  const duplicateProduct = await db.product.findFirst({
+    where: {
+      name: { equals: name, mode: "insensitive" },
+      id: { not: id },
+    },
+  });
+
+  if (duplicateProduct) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên sản phẩm không hợp lệ hoặc đã tồn tại. Vui lòng kiểm tra.",
+      }),
+      { status: 400 },
+    );
+  }
 
   const updated = await db.product.update({
     data: {
@@ -188,17 +263,6 @@ export async function PUT(request: NextRequest) {
     },
     where: { id },
   });
-
-  if (!updated) {
-    return NextResponse.json(
-      makeResponse({
-        status: 404,
-        data: {},
-        message: "Sản phẩm không tồn tại",
-      }),
-      { status: 404 },
-    );
-  }
 
   return NextResponse.json(
     makeResponse({
