@@ -52,6 +52,15 @@ export const createUserColumns = (
     ),
   },
   {
+    accessorKey: "role",
+    header: "Vai trò",
+    cell: ({ row }) => (
+      <span className="line-clamp-2 text-gray-600">
+        {row.getValue("role") || "Khách hàng"}
+      </span>
+    ),
+  },
+  {
     accessorKey: "isVerified",
     header: "Trạng thái",
     cell: ({ row }) => (

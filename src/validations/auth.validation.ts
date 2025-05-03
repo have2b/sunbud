@@ -20,9 +20,24 @@ export const registerSchema = v.object({
       "Số điện thoại không hợp lệ. Bắt đầu bằng 0, có 10 số và ký tự thứ 2 phải là 9,8,3,5",
     ),
   ),
-  firstName: v.string(),
-  lastName: v.string(),
-  password: v.string(),
+  firstName: v.pipe(
+    v.string(),
+    v.minLength(2, "Họ phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Họ không được vượt quá 50 ký tự"),
+  ),
+  lastName: v.pipe(
+    v.string(),
+    v.minLength(2, "Tên phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Tên không được vượt quá 50 ký tự"),
+  ),
+  password: v.pipe(
+    v.string(),
+    v.minLength(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+    v.regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+      "Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt",
+    ),
+  ),
 });
 
 export type RegisterSchema = v.InferOutput<typeof registerSchema>;

@@ -49,11 +49,21 @@ export async function GET(request: NextRequest) {
     role: { in: ["USER", "SHIPPER"] },
   };
 
-  if (username) where.username = { contains: username, mode: "insensitive" };
-  if (email) where.email = { contains: email, mode: "insensitive" };
-  if (firstName) where.firstName = { contains: firstName, mode: "insensitive" };
-  if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
-  if (phone) where.phone = { contains: phone, mode: "insensitive" };
+  // Handle general search (used when both username and firstName have the same value)
+  if (username && firstName && username === firstName) {
+    where.OR = [
+      { username: { contains: username, mode: "insensitive" } },
+      { firstName: { contains: firstName, mode: "insensitive" } },
+    ];
+  } else {
+    // Regular individual field searches
+    if (username) where.username = { contains: username, mode: "insensitive" };
+    if (email) where.email = { contains: email, mode: "insensitive" };
+    if (firstName)
+      where.firstName = { contains: firstName, mode: "insensitive" };
+    if (lastName) where.lastName = { contains: lastName, mode: "insensitive" };
+    if (phone) where.phone = { contains: phone, mode: "insensitive" };
+  }
 
   const [total, usersList] = await Promise.all([
     db.user.count({ where }),

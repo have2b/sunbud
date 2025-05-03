@@ -22,6 +22,11 @@ export default function UserDatatable() {
     { label: "Họ", key: "lastName" },
     { label: "Số điện thoại", key: "phone" },
     {
+      label: "Vai trò",
+      key: "role",
+      render: (v) => v || "Khách hàng",
+    },
+    {
       label: "Trạng thái",
       key: "isVerified",
       render: (v) => (v ? "Đã kích hoạt" : "Vô hiệu hóa"),
@@ -61,8 +66,18 @@ export default function UserDatatable() {
         )}
         filterFields={userFilterFields}
         searchableFields={{
-          placeholder: "Tìm kiếm theo tên...",
-          onSearch: (input) => [{ field: "username", value: input }],
+          placeholder: "Tìm kiếm theo tên hoặc tên người dùng...",
+          onSearch: (input) => {
+            // When input is empty, return no search criteria
+            if (!input.trim()) return [];
+            
+            // When searching, set both fields to the same value
+            // The API is updated to handle this as an OR condition
+            return [
+              { field: "username", value: input },
+              { field: "firstName", value: input }
+            ];
+          },
         }}
         initialPageSize={10}
         onRowClick={dialog.openDialog}

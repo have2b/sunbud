@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const { username, email, firstName, lastName, phone, password } =
     await request.json();
 
-  const isEmailExists = await db.user.findFirst({
+  const existingUserWithEmail = await db.user.findFirst({
     where: { email },
   });
 
@@ -24,9 +24,11 @@ export async function POST(request: NextRequest) {
     where: { phone },
   });
 
-  if (isEmailExists) {
+  if (existingUserWithEmail) {
+    // Always return error if email already exists, regardless of verification status
+    // This prevents duplicate registrations with the same email
     return NextResponse.json(
-      makeResponse({ status: 409, data: {}, message: "Email đã tồn tại" }),
+      makeResponse({ status: 409, data: {}, message: "Email đã được sử dụng" }),
       { status: 409 },
     );
   }

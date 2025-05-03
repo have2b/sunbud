@@ -31,15 +31,28 @@ export type UpdateUserSchema = v.InferOutput<typeof updateUserSchema>;
 export const profileFormSchema = v.object({
   firstName: v.pipe(
     v.string(),
-    v.minLength(2, "First name must be at least 2 characters"),
+    v.minLength(2, "Họ phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Họ không được vượt quá 50 ký tự"),
   ),
   lastName: v.pipe(
     v.string(),
-    v.minLength(2, "Last name must be at least 2 characters"),
+    v.minLength(2, "Tên phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Tên không được vượt quá 50 ký tự"),
   ),
-  email: v.pipe(v.string(), v.email("Invalid email address")),
-  phone: v.pipe(v.string(), v.minLength(10, "Invalid phone number")),
-  avatarUrl: v.pipe(v.string(), v.url("Invalid URL")),
+  email: v.pipe(
+    v.string(), 
+    v.minLength(1, "Email không được để trống"),
+    v.email("Địa chỉ email không hợp lệ")
+  ),
+  phone: v.pipe(
+    v.string(), 
+    v.minLength(1, "Số điện thoại không được để trống"),
+    v.regex(
+      /^0[9835]\d{8}$/,
+      "Số điện thoại không hợp lệ. Bắt đầu bằng 0, có 10 số và ký tự thứ 2 phải là 9,8,3,5"
+    ),
+  ),
+  avatarUrl: v.pipe(v.string(), v.url("Đường dẫn ảnh đại diện không hợp lệ")),
 });
 
 export type ProfileFormValues = v.InferOutput<typeof profileFormSchema>;
@@ -47,18 +60,35 @@ export type ProfileFormValues = v.InferOutput<typeof profileFormSchema>;
 export const profileFormWithPasswordSchema = v.object({
   firstName: v.pipe(
     v.string(),
-    v.minLength(2, "First name must be at least 2 characters"),
+    v.minLength(2, "Họ phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Họ không được vượt quá 50 ký tự"),
   ),
   lastName: v.pipe(
     v.string(),
-    v.minLength(2, "Last name must be at least 2 characters"),
+    v.minLength(2, "Tên phải có ít nhất 2 ký tự"),
+    v.maxLength(50, "Tên không được vượt quá 50 ký tự"),
   ),
-  email: v.pipe(v.string(), v.email("Invalid email address")),
-  phone: v.pipe(v.string(), v.minLength(10, "Invalid phone number")),
-  avatarUrl: v.pipe(v.string(), v.url("Invalid URL")),
+  email: v.pipe(
+    v.string(), 
+    v.minLength(1, "Email không được để trống"),
+    v.email("Địa chỉ email không hợp lệ")
+  ),
+  phone: v.pipe(
+    v.string(), 
+    v.minLength(1, "Số điện thoại không được để trống"),
+    v.regex(
+      /^0[9835]\d{8}$/,
+      "Số điện thoại không hợp lệ. Bắt đầu bằng 0, có 10 số và ký tự thứ 2 phải là 9,8,3,5"
+    ),
+  ),
+  avatarUrl: v.pipe(v.string(), v.url("Đường dẫn ảnh đại diện không hợp lệ")),
   password: v.optional(v.pipe(
     v.string(),
-    v.minLength(8, "Password must be at least 8 characters"),
+    v.minLength(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+    v.regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+      "Mật khẩu phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
+    ),
   )),
   confirmPassword: v.optional(v.string()),
 });
