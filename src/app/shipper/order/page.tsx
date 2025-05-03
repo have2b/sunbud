@@ -12,7 +12,7 @@ export default function ShipperOrderPage() {
 
       {/* Data Table Section */}
       <div className="rounded-lg border shadow-sm">
-        <ShipperOrderDatatable initialShippingStatus="SHIPPING" />
+        <ShipperOrderDatatable initialStatus="SHIPPING" />
       </div>
     </div>
   );

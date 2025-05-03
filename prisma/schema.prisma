@@ -28,11 +28,6 @@ enum PaymentMethod {
   CASH
 }
 
-enum ShippingStatus {
-  SHIPPING
-  DELIVERED
-}
-
 enum DeliveryMethod {
   SHIPPING
   PICKUP
@@ -101,7 +96,6 @@ model Order {
   paymentStatus  PaymentStatus  @default(PENDING)
   paymentMethod  PaymentMethod  @default(BANK)
   deliveryMethod DeliveryMethod @default(SHIPPING)
-  shippingStatus ShippingStatus @default(SHIPPING)
   address        String?
   phone          String?
   shipperId      Int?

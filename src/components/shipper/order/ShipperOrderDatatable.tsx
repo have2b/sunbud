@@ -12,11 +12,11 @@ import { shipperOrderFilterFields } from "./shipperOrder.filter";
 import UpdateOrderForm from "./ShipperUpdateOrderForm";
 
 interface ShipperOrderDatatableProps {
-  initialShippingStatus?: string;
+  initialStatus?: string;
 }
 
 export default function ShipperOrderDatatable({
-  initialShippingStatus,
+  initialStatus,
 }: ShipperOrderDatatableProps) {
   const dialog = useDetailDialog<Order>();
 
@@ -30,7 +30,6 @@ export default function ShipperOrderDatatable({
     { label: "Trạng thái", key: "status" },
     { label: "Phương thức thanh toán", key: "paymentMethod" },
     { label: "Trạng thái thanh toán", key: "paymentStatus" },
-    { label: "Trạng thái giao hàng", key: "shippingStatus" },
     { label: "Địa chỉ", key: "address" },
     { label: "Số điện thoại", key: "phone" },
     { label: "Tổng tiền", key: "totalAmount" },
@@ -74,7 +73,7 @@ export default function ShipperOrderDatatable({
         }}
         initialPageSize={10}
         initialParams={{
-          shippingStatus: initialShippingStatus || "",
+          status: initialStatus || "",
         }}
         onRowClick={dialog.openDialog}
       />

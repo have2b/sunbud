@@ -20,10 +20,10 @@ export const createShipperOrderColumns = (
     ),
   },
   {
-    accessorKey: "shippingStatus",
+    accessorKey: "status",
     header: "Trạng thái giao hàng",
     cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("shippingStatus")}</span>
+      <span className="font-medium">{row.getValue("status")}</span>
     ),
   },
   {

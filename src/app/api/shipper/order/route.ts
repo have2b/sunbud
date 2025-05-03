@@ -4,7 +4,6 @@ import {
   PaymentStatus,
   Prisma,
   PrismaClient,
-  ShippingStatus,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import { jwtVerify } from "jose";
@@ -65,7 +64,6 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("userId");
   const status = searchParams.get("status");
   const paymentStatus = searchParams.get("paymentStatus");
-  const shippingStatus = searchParams.get("shippingStatus");
   const paymentMethod = searchParams.get("paymentMethod");
   const minTotal = searchParams.get("minTotal");
   const maxTotal = searchParams.get("maxTotal");
@@ -77,8 +75,6 @@ export async function GET(request: NextRequest) {
     conditions.push({ paymentStatus: paymentStatus as PaymentStatus });
   if (paymentMethod)
     conditions.push({ paymentMethod: paymentMethod as PaymentMethod });
-  if (shippingStatus)
-    conditions.push({ shippingStatus: shippingStatus as ShippingStatus });
   if (minTotal) conditions.push({ totalAmount: { gte: Number(minTotal) } });
   if (maxTotal) conditions.push({ totalAmount: { lte: Number(maxTotal) } });
 
@@ -128,7 +124,7 @@ export async function PUT(request: NextRequest) {
   const secret = new TextEncoder().encode(process.env.JWT_SECRET);
   const { payload } = await jwtVerify(token, secret);
   const shipperId = parseInt(payload.userId as string, 10);
-  const { id, shippingStatus } = await request.json();
+  const { id, status } = await request.json();
   if (!id) {
     return NextResponse.json(
       makeResponse({
@@ -144,7 +140,7 @@ export async function PUT(request: NextRequest) {
     updated = await db.order.update({
       where: { id: Number(id), shipperId: Number(shipperId) },
       data: {
-        shippingStatus: shippingStatus as ShippingStatus,
+        status: status as OrderStatus,
       },
     });
   } catch {

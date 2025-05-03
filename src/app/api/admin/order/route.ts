@@ -5,7 +5,6 @@ import {
   PaymentStatus,
   Prisma,
   PrismaClient,
-  ShippingStatus,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import { NextRequest, NextResponse } from "next/server";
@@ -143,7 +142,6 @@ export async function PUT(request: NextRequest) {
     paymentStatus,
     paymentMethod,
     deliveryMethod,
-    shippingStatus,
     address,
     phone,
   } = await request.json();
@@ -166,7 +164,6 @@ export async function PUT(request: NextRequest) {
         paymentStatus: paymentStatus as PaymentStatus,
         paymentMethod: paymentMethod as PaymentMethod,
         deliveryMethod: deliveryMethod as DeliveryMethod,
-        shippingStatus: shippingStatus as ShippingStatus,
         address,
         phone,
       },

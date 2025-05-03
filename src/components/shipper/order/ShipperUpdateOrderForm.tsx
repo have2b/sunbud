@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Order, ShippingStatus } from "@/generated/prisma";
+import { Order, OrderStatus } from "@/generated/prisma";
 import {
   updateShipperOrderSchema,
   UpdateShipperOrderSchema,
@@ -52,7 +52,7 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
     resolver: valibotResolver(updateShipperOrderSchema),
     defaultValues: {
       id: order.id,
-      shippingStatus: order.shippingStatus,
+      status: order.status,
     },
   });
 
@@ -60,7 +60,7 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
     if (order) {
       form.reset({
         id: order.id,
-        shippingStatus: order.shippingStatus,
+        status: order.status,
       });
       setOpen(true);
     }
@@ -109,7 +109,7 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
 
             <FormField
               control={form.control}
-              name="shippingStatus"
+              name="status"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel required>Trạng thái giao hàng</FormLabel>
@@ -120,7 +120,7 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(ShippingStatus).map((status) => (
+                      {Object.values(OrderStatus).map((status) => (
                         <SelectItem key={status} value={status}>
                           {status}
                         </SelectItem>

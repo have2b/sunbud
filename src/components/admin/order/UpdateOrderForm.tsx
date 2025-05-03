@@ -37,7 +37,6 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-  ShippingStatus,
 } from "@/generated/prisma";
 import {
   updateOrderSchema,
@@ -63,7 +62,6 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,
       deliveryMethod: order.deliveryMethod,
-      shippingStatus: order.shippingStatus,
       status: order.status,
       address: order.address || "",
       phone: order.phone || "",
@@ -77,7 +75,6 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
         paymentMethod: order.paymentMethod,
         paymentStatus: order.paymentStatus,
         deliveryMethod: order.deliveryMethod,
-        shippingStatus: order.shippingStatus,
         status: order.status,
         address: order.address || "",
         phone: order.phone || "",
@@ -246,30 +243,6 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
                         {Object.values(DeliveryMethod).map((method) => (
                           <SelectItem key={method} value={method}>
                             {method}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="shippingStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>Trạng thái giao hàng</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn danh mục" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.values(ShippingStatus).map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {status}
                           </SelectItem>
                         ))}
                       </SelectContent>

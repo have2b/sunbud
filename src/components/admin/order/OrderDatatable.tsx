@@ -30,7 +30,6 @@ export default function OrderDatatable() {
     { label: "Phương thức thanh toán", key: "paymentMethod" },
     { label: "Phương thức giao hàng", key: "deliveryMethod" },
     { label: "Trạng thái thanh toán", key: "paymentStatus" },
-    { label: "Trạng thái giao hàng", key: "deliveryStatus" },
     { label: "Địa chỉ", key: "address" },
     { label: "Số điện thoại", key: "phone" },
     { label: "Tổng tiền", key: "totalAmount" },

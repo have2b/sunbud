@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest) {
     include: {
       shippedOrders: {
         where: {
-          shippingStatus: "SHIPPING",
+          status: "SHIPPING",
         },
       },
     },

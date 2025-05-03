@@ -5,7 +5,6 @@ import {
   PaymentStatus,
   PrismaClient,
   Role,
-  ShippingStatus,
 } from "@/generated/prisma";
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
@@ -153,7 +152,6 @@ async function seedOrders(count = 100, batchSize = 20) {
       paymentStatus: faker.helpers.enumValue(PaymentStatus),
       paymentMethod: faker.helpers.enumValue(PaymentMethod),
       deliveryMethod: faker.helpers.enumValue(DeliveryMethod),
-      shippingStatus: faker.helpers.enumValue(ShippingStatus),
       totalAmount: faker.commerce.price({ min: 1000, max: 10000 }),
       address: faker.location.streetAddress(),
       phone: faker.phone.number(),
