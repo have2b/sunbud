@@ -73,15 +73,20 @@ const PublishCategoryForm: React.FC<PublishCategoryFormProps> = ({
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p>
-            Bạn có chắc chắn muốn {!category.isPublish ? "hiển thị" : "ẩn"} danh
-            mục &ldquo;
-            <strong>{category.name}</strong>&rdquo;?
-          </p>
-          {category.isPublish && (
-            <p className="mt-2 text-red-600">
-              Lưu ý: Nếu danh mục này có sản phẩm, sản phẩm của nó sẽ không thể
-              hiển thị.
+          {category.isPublish ? (
+            <>
+              <p className="text-red-600 font-medium mb-2">
+                Danh mục sẽ không hiển thị trong cửa hàng trực tuyến nếu bạn chọn trạng thái này. Bạn có chắc chắn không?
+              </p>
+              <p>
+                Nếu danh mục này có sản phẩm, sản phẩm của nó sẽ không thể
+                hiển thị trong cửa hàng.
+              </p>
+            </>
+          ) : (
+            <p>
+              Bạn có chắc chắn muốn hiển thị danh mục &ldquo;
+              <strong>{category.name}</strong>&rdquo;?
             </p>
           )}
         </div>
@@ -94,7 +99,7 @@ const PublishCategoryForm: React.FC<PublishCategoryFormProps> = ({
             }}
             disabled={publishMutation.isPending}
           >
-            Hủy
+            {category.isPublish ? "Không" : "Hủy"}
           </Button>
           <Button
             className={`text-white ${category.isPublish ? "bg-red-600" : "bg-green-600"} hover:${category.isPublish ? "bg-red-700" : "bg-green-700"}`}
@@ -104,7 +109,7 @@ const PublishCategoryForm: React.FC<PublishCategoryFormProps> = ({
             {publishMutation.isPending
               ? "Đang xử lý..."
               : category.isPublish
-                ? "Ẩn"
+                ? "Có"
                 : "Hiển thị"}
           </Button>
         </div>

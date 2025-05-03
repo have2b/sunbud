@@ -20,6 +20,11 @@ export default function CategoryDatatable() {
     { label: "Tên danh mục", key: "name" },
     { label: "Mô tả", key: "description", className: "col-span-2" },
     {
+      label: "Trạng thái",
+      key: "isPublish",
+      render: (v) => v ? "Công khai" : "Ẩn",
+    },
+    {
       label: "Ngày tạo",
       key: "createdAt",
       render: (v) => new Date(v).toLocaleDateString(),

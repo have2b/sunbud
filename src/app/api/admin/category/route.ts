@@ -96,6 +96,35 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+  
+  // Check if name exceeds 255 characters
+  if (name.length > 255) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên danh mục không được vượt quá 255 ký tự",
+      }),
+      { status: 400 },
+    );
+  }
+
+  // Check for duplicate name
+  const existingCategory = await db.category.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+  });
+
+  if (existingCategory) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên danh mục không hợp lệ hoặc đã tồn tại. Vui lòng kiểm tra.",
+      }),
+      { status: 400 },
+    );
+  }
+  
   const inserted = await db.category.create({
     data: { name, description, isPublish },
   });
@@ -121,11 +150,25 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
-  const updated = await db.category.update({
-    data: { name, description, isPublish },
+  
+  // Check if name exceeds 255 characters
+  if (name.length > 255) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên danh mục không được vượt quá 255 ký tự",
+      }),
+      { status: 400 },
+    );
+  }
+
+  // Check if the category exists
+  const existingCategory = await db.category.findUnique({
     where: { id },
   });
-  if (!updated) {
+  
+  if (!existingCategory) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -135,6 +178,31 @@ export async function PUT(request: NextRequest) {
       { status: 404 },
     );
   }
+  
+  // Check for duplicate name (excluding the current category)
+  const duplicateCategory = await db.category.findFirst({
+    where: {
+      name: { equals: name, mode: "insensitive" },
+      id: { not: id },
+    },
+  });
+
+  if (duplicateCategory) {
+    return NextResponse.json(
+      makeResponse({
+        status: 400,
+        data: {},
+        message: "Tên danh mục không hợp lệ hoặc đã tồn tại. Vui lòng kiểm tra.",
+      }),
+      { status: 400 },
+    );
+  }
+  
+  const updated = await db.category.update({
+    data: { name, description, isPublish },
+    where: { id },
+  });
+  
   return NextResponse.json(
     makeResponse({
       status: 200,
