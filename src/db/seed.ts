@@ -13,6 +13,19 @@ import "dotenv/config";
 
 const prisma = new PrismaClient();
 
+// Helper function to generate a random date within the past 6 months
+const getRandomDateInPast6Months = () => {
+  // Current date
+  const now = new Date();
+  now.setMonth(now.getMonth() + 1);
+  // 6 months ago
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+  // Random date between now and 6 months ago
+  return faker.date.between({ from: sixMonthsAgo, to: now });
+};
+
 async function seedCategories(count = 20) {
   const names = new Set<string>();
   const rows = [];
@@ -24,6 +37,7 @@ async function seedCategories(count = 20) {
       name,
       description: faker.commerce.productDescription(),
       isPublish: faker.datatype.boolean(),
+      createdAt: getRandomDateInPast6Months(),
     });
   }
   await prisma.category.createMany({ data: rows });
@@ -62,6 +76,7 @@ async function seedUsers(count = 100, batchSize = 20) {
       role: Math.random() < 0.5 ? Role.USER : Role.SHIPPER,
       otp: faker.string.numeric(6),
       isVerified: faker.datatype.boolean(),
+      createdAt: getRandomDateInPast6Months(),
     });
   }
 
@@ -102,6 +117,7 @@ async function seedProducts(
       quantity: faker.number.int({ min: 1, max: 100 }),
       imageUrl: faker.image.url(),
       isPublish: faker.datatype.boolean(),
+      createdAt: getRandomDateInPast6Months(),
     });
   }
 
@@ -141,6 +157,7 @@ async function seedOrders(count = 100, batchSize = 20) {
       totalAmount: faker.commerce.price({ min: 1000, max: 10000 }),
       address: faker.location.streetAddress(),
       phone: faker.phone.number(),
+      createdAt: getRandomDateInPast6Months(),
     });
   }
 
@@ -186,6 +203,7 @@ async function seedOrderItems(
       productId: randomProduct.id,
       quantity: quantity,
       price: randomProduct.price, // Use the actual product price for realism
+      createdAt: getRandomDateInPast6Months(),
     });
   }
 
@@ -210,13 +228,13 @@ async function main() {
 
     // Seed users and products first
     await Promise.all([
-      seedUsers(100, 20),
+      seedUsers(200, 20),
       seedProducts(500, 100, categoryCount),
     ]);
 
     // Then seed orders and order items sequentially with proper relationships
-    const seededOrders = await seedOrders(100, 20);
-    await seedOrderItems(200, 20, seededOrders);
+    const seededOrders = await seedOrders(200, 20);
+    await seedOrderItems(400, 20, seededOrders);
 
     console.log("🎉 All done!");
     process.exit(0);

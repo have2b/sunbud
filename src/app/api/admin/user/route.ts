@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   const phone = searchParams.get("phone");
 
   const where: Prisma.UserWhereInput = {
-    role: "USER",
+    role: { in: ["USER", "SHIPPER"] },
   };
 
   if (username) where.username = { contains: username, mode: "insensitive" };
