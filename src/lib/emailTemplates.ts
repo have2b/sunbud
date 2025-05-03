@@ -63,3 +63,59 @@ export function generateForgotPasswordEmail(
   const text = `Xin chào ${firstName} ${lastName},\n\nMật khẩu mới của bạn là: ${newPassword}\nHãy đăng nhập và đổi lại mật khẩu ngay sau khi đăng nhập. Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này hoặc liên hệ với bộ phận hỗ trợ.`;
   return { subject, html, text };
 }
+
+export function generateAccountDeactivationEmail(
+  firstName: string,
+  lastName: string,
+  accountIdentifier: string,
+  deactivationTime: string,
+  reason: string,
+): { subject: string; html: string; text: string } {
+  const subject = "Thông báo vô hiệu hóa tài khoản";
+
+  const html = `
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; padding: 30px;">
+  <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+    <h2 style="color: #333333;">Kính gửi ${firstName} ${lastName},</h2>
+    <p style="font-size: 16px; color: #555555; line-height: 1.6;">
+      Tài khoản <strong>${accountIdentifier}</strong> của bạn trên hệ thống Blossomy đã bị vô hiệu hóa vào lúc 
+      <strong>${deactivationTime}</strong> bởi quản lý hệ thống.
+    </p>
+    
+    <div style="background-color: #fff3f5; padding: 20px; border-radius: 8px; margin: 25px 0;">
+      <p style="margin: 0; font-size: 16px; color: #555555;">
+        <strong>Lý do:</strong><br/>
+        ${reason}
+      </p>
+    </div>
+
+    <p style="font-size: 16px; color: #555555; line-height: 1.6;">
+      Trong thời gian tài khoản bị vô hiệu hóa, bạn sẽ không thể đăng nhập hoặc sử dụng các chức năng của hệ thống.
+    </p>
+
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 30px;">
+      <p style="font-size: 14px; color: #555555; text-align: center; margin: 0;">
+        Nếu cho rằng đây là sự nhầm lẫn, vui lòng liên hệ bộ phận hỗ trợ!
+      </p>
+    </div>
+
+    <hr style="margin: 40px 0; border: none; border-top: 1px solid #eeeeee;" />
+    <p style="font-size: 12px; color: #cccccc; text-align: center;">© 2025 Blossomy. Mọi quyền được bảo lưu.</p>
+  </div>
+</div>
+`;
+
+  const text = `Kính gửi ${firstName} ${lastName},
+
+Tài khoản ${accountIdentifier} của bạn trên hệ thống Blossomy đã bị vô hiệu hóa vào lúc ${deactivationTime}.
+
+Lý do: ${reason}
+
+Trong thời gian tài khoản bị vô hiệu hóa, bạn sẽ không thể đăng nhập hoặc sử dụng các chức năng của hệ thống.
+
+Nếu cho rằng đây là sự nhầm lẫn, vui lòng liên hệ bộ phận hỗ trợ!
+
+© 2025 Blossomy. Mọi quyền được bảo lưu.`;
+
+  return { subject, html, text };
+}

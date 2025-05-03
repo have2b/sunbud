@@ -1,6 +1,8 @@
 import { Prisma, PrismaClient } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
+import { generateAccountDeactivationEmail } from "@/lib/emailTemplates";
 
 const db = new PrismaClient();
 
@@ -68,6 +70,27 @@ export async function PUT(request: NextRequest) {
       }),
       { status: 404 },
     );
+  }
+
+  // Send deactivation email if user is being deactivated (isVerified changed from true to false)
+  if (user.isVerified && !updated.isVerified) {
+    try {
+      const deactivationTime = new Date().toLocaleString("vi-VN");
+      const reason = "Tài khoản của bạn đã bị vô hiệu hóa bởi quản trị viên.";
+      
+      const emailContent = generateAccountDeactivationEmail(
+        user.firstName,
+        user.lastName,
+        user.email,
+        deactivationTime,
+        reason
+      );
+      
+      await sendEmail(user.email, emailContent.subject, emailContent.html);
+    } catch (error) {
+      console.error("Failed to send deactivation email:", error);
+      // Continue with the response even if email sending fails
+    }
   }
 
   const message = !user.isVerified

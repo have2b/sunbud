@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { omit } from "lodash";
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
+import { generateAccountDeactivationEmail } from "@/lib/emailTemplates";
 
 const db = new PrismaClient();
 
@@ -228,6 +230,27 @@ export async function PUT(request: NextRequest) {
       // Auto set isVerified to false when role is changed to SHIPPER
       if (role === "SHIPPER") {
         dataToUpdate.isVerified = false;
+        
+        // Schedule email sending for account deactivation when changing to SHIPPER
+        if (currentUser.isVerified) {
+          try {
+            const deactivationTime = new Date().toLocaleString("vi-VN");
+            const reason = "Tài khoản của bạn đã được chuyển sang vai trò Shipper và cần được xác minh lại.";
+            
+            const emailContent = generateAccountDeactivationEmail(
+              currentUser.firstName,
+              currentUser.lastName,
+              currentUser.email,
+              deactivationTime,
+              reason
+            );
+            
+            await sendEmail(currentUser.email, emailContent.subject, emailContent.html);
+          } catch (error) {
+            console.error("Failed to send deactivation email:", error);
+            // Continue with the update even if email sending fails
+          }
+        }
       }
     }
 
@@ -235,6 +258,30 @@ export async function PUT(request: NextRequest) {
       dataToUpdate.passwordHash = await bcrypt.hash(password, 10);
     }
 
+    // Check if isVerified is being explicitly set to false
+    if (dataToUpdate.isVerified === false && currentUser.isVerified) {
+      // If the change is not part of the role change to SHIPPER (which is handled above)
+      if (!(role && role === "SHIPPER")) {
+        try {
+          const deactivationTime = new Date().toLocaleString("vi-VN");
+          const reason = "Tài khoản của bạn đã bị vô hiệu hóa bởi quản trị viên.";
+          
+          const emailContent = generateAccountDeactivationEmail(
+            currentUser.firstName,
+            currentUser.lastName,
+            currentUser.email,
+            deactivationTime,
+            reason
+          );
+          
+          await sendEmail(currentUser.email, emailContent.subject, emailContent.html);
+        } catch (error) {
+          console.error("Failed to send deactivation email:", error);
+          // Continue with the update even if email sending fails
+        }
+      }
+    }
+    
     const updated = await db.user.update({
       where: { id },
       data: dataToUpdate,

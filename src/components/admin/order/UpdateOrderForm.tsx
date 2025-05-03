@@ -89,10 +89,10 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
       return response.data;
     },
     onSuccess: async () => {
-      toast.success("Cập nhật danh mục thành công");
+      toast.success("Cập nhật đơn hàng thành công");
       setOpen(false);
       onClose();
-      await queryClient.invalidateQueries({ queryKey: ["categories"] });
+      await queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {

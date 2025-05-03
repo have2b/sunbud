@@ -113,18 +113,27 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel required>Trạng thái giao hàng</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={field.value !== OrderStatus.SHIPPING}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Trạng thái giao hàng" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(OrderStatus).map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status}
+                      {/* Only allow updating from SHIPPING to DELIVERED */}
+                      {field.value === OrderStatus.SHIPPING ? (
+                        <SelectItem value={OrderStatus.DELIVERED}>
+                          {OrderStatus.DELIVERED}
                         </SelectItem>
-                      ))}
+                      ) : (
+                        <SelectItem value={field.value}>
+                          {field.value}
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -145,10 +154,15 @@ const UpdateOrderForm: React.FC<UpdateOrderFormProps> = ({
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={updateOrderMutation.isPending}>
+              <Button 
+                type="submit" 
+                disabled={updateOrderMutation.isPending || order.status !== OrderStatus.SHIPPING}
+              >
                 {updateOrderMutation.isPending
                   ? "Đang cập nhật..."
-                  : "Cập nhật"}
+                  : order.status !== OrderStatus.SHIPPING
+                    ? "Không thể cập nhật"
+                    : "Đánh dấu đã giao"}
               </Button>
             </div>
           </form>

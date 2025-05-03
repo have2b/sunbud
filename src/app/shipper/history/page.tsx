@@ -1,4 +1,4 @@
-import ShipperOrderDatatable from "@/components/shipper/order/ShipperOrderDatatable";
+import ShipperOrderHistoryDatatable from "@/components/shipper/order/ShipperOrderHistoryDatatable";
 
 export default function ShipperOrderPage() {
   return (
@@ -12,7 +12,7 @@ export default function ShipperOrderPage() {
 
       {/* Data Table Section */}
       <div className="rounded-lg border shadow-sm">
-        <ShipperOrderDatatable initialStatus="DELIVERED" />
+        <ShipperOrderHistoryDatatable initialStatus="DELIVERED" />
       </div>
     </div>
   );

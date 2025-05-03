@@ -44,22 +44,25 @@ export async function GET(request: NextRequest) {
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
   const userId = searchParams.get("userId");
-  const status = searchParams.get("status");
-  const paymentStatus = searchParams.get("paymentStatus");
-  const paymentMethod = searchParams.get("paymentMethod");
-  const deliveryMethod = searchParams.get("deliveryMethod");
+  const status = searchParams.get("status")?.toUpperCase() as OrderStatus;
+  const paymentStatus = searchParams
+    .get("paymentStatus")
+    ?.toUpperCase() as PaymentStatus;
+  const paymentMethod = searchParams
+    .get("paymentMethod")
+    ?.toUpperCase() as PaymentMethod;
+  const deliveryMethod = searchParams
+    .get("deliveryMethod")
+    ?.toUpperCase() as DeliveryMethod;
   const minTotal = searchParams.get("minTotal");
   const maxTotal = searchParams.get("maxTotal");
 
   const conditions: Prisma.OrderWhereInput[] = [];
   if (userId) conditions.push({ userId: Number(userId) });
-  if (status) conditions.push({ status: status as OrderStatus });
-  if (paymentStatus)
-    conditions.push({ paymentStatus: paymentStatus as PaymentStatus });
-  if (paymentMethod)
-    conditions.push({ paymentMethod: paymentMethod as PaymentMethod });
-  if (deliveryMethod)
-    conditions.push({ deliveryMethod: deliveryMethod as DeliveryMethod });
+  if (status) conditions.push({ status });
+  if (paymentStatus) conditions.push({ paymentStatus });
+  if (paymentMethod) conditions.push({ paymentMethod });
+  if (deliveryMethod) conditions.push({ deliveryMethod });
   if (minTotal) conditions.push({ totalAmount: { gte: Number(minTotal) } });
   if (maxTotal) conditions.push({ totalAmount: { lte: Number(maxTotal) } });
 
@@ -155,20 +158,14 @@ export async function PUT(request: NextRequest) {
       { status: 400 },
     );
   }
-  let updated;
-  try {
-    updated = await db.order.update({
-      where: { id: Number(id) },
-      data: {
-        status: status as OrderStatus,
-        paymentStatus: paymentStatus as PaymentStatus,
-        paymentMethod: paymentMethod as PaymentMethod,
-        deliveryMethod: deliveryMethod as DeliveryMethod,
-        address,
-        phone,
-      },
-    });
-  } catch {
+
+  // Get the current order to check for status change
+  const currentOrder = await db.order.findUnique({
+    where: { id: Number(id) },
+    select: { status: true },
+  });
+
+  if (!currentOrder) {
     return NextResponse.json(
       makeResponse({
         status: 404,
@@ -178,11 +175,102 @@ export async function PUT(request: NextRequest) {
       { status: 404 },
     );
   }
+
+  // Check if status is changing from VERIFIED to SHIPPING
+  const isChangingToShipping =
+    currentOrder.status === OrderStatus.VERIFIED &&
+    status === OrderStatus.SHIPPING;
+
+  // Prepare data for update
+  const updateData: Prisma.OrderUpdateInput = {
+    status: status as OrderStatus,
+    paymentStatus: paymentStatus as PaymentStatus,
+    paymentMethod: paymentMethod as PaymentMethod,
+    deliveryMethod: deliveryMethod as DeliveryMethod,
+    address,
+    phone,
+  };
+
+  // If status is changing to SHIPPING, assign a shipper
+  if (isChangingToShipping) {
+    // Find verified shippers with the count of their current assigned orders
+    const shippersWithOrderCounts = await db.user.findMany({
+      where: {
+        role: "SHIPPER",
+        isVerified: true,
+      },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            shippedOrders: {
+              where: {
+                OR: [{ status: OrderStatus.SHIPPING }],
+              },
+            },
+          },
+        },
+      },
+      // Sort manually by order count since we can't directly orderBy _count in this version of Prisma
+    });
+
+    // Manually sort shippers by order count
+    const sortedShippers = shippersWithOrderCounts.sort((a, b) => {
+      // First sort by the number of ongoing shipping orders
+      const aCount = a._count.shippedOrders;
+      const bCount = b._count.shippedOrders;
+
+      if (aCount !== bCount) {
+        return aCount - bCount; // Sort ascending by count
+      }
+
+      // If counts are equal, sort by ID for consistency
+      return a.id - b.id;
+    });
+
+    // Assign the first available shipper if any exists
+    if (sortedShippers.length > 0) {
+      updateData.shipper = { connect: { id: sortedShippers[0].id } };
+    }
+  }
+
+  // Update the order
+  let updated;
+  try {
+    updated = await db.order.update({
+      where: { id: Number(id) },
+      data: updateData,
+      include: {
+        shipper: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error updating order:", error);
+    return NextResponse.json(
+      makeResponse({
+        status: 500,
+        data: {},
+        message: "Lỗi khi cập nhật đơn hàng",
+      }),
+      { status: 500 },
+    );
+  }
+
   return NextResponse.json(
     makeResponse({
       status: 200,
       data: updated,
-      message: "Cập nhật đơn hàng thành công",
+      message:
+        updated.shipper && isChangingToShipping
+          ? `Cập nhật đơn hàng thành công và đã giao cho shipper ${updated.shipper.firstName} ${updated.shipper.lastName}`
+          : "Cập nhật đơn hàng thành công",
     }),
     { status: 200 },
   );
