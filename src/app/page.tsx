@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "@/components/common/Footer";
 import HeroSection from "@/components/common/HeroSection";
 import {
   Card,
@@ -96,6 +97,7 @@ export default function Home() {
           </div>
         </div>
       </motion.section>
+      <Footer />
     </>
   );
 }

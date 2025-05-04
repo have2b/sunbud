@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "../ui/button";
 
 const HeroSection = () => {
@@ -23,7 +24,7 @@ const HeroSection = () => {
           Mang vẻ đẹp tự nhiên đến không gian của bạn
         </p>
         <Button className="cursor-pointer rounded-3xl bg-rose-400 px-10 py-4 text-lg text-white transition-colors hover:bg-rose-500">
-          Mua ngay
+          <Link href="/shop">Mua ngay</Link>
         </Button>
       </div>
     </motion.section>
