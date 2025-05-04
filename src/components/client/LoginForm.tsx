@@ -15,12 +15,14 @@ import { loginSchema, LoginSchema } from "@/validations/auth.validation";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { Lock, User } from "lucide-react";
+import { AlertCircle, Lock, User } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import {
   Card,
   CardContent,
@@ -35,6 +37,10 @@ const LoginForm = () => {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
   const setAuth = useAuthStore((state) => state.setAuth);
+  const [verificationError, setVerificationError] = useState<{
+    show: boolean;
+    email: string | null;
+  }>({ show: false, email: null });
 
   const form = useForm<LoginSchema>({
     resolver: valibotResolver(loginSchema),
@@ -47,13 +53,13 @@ const LoginForm = () => {
   const loginMutation = useMutation({
     mutationFn: async (data: LoginSchema) => {
       const response = await axios.post("/api/login", data);
-
       return response.data;
     },
     onSuccess: (data) => {
       toast.success(data.message);
       setAuth(data.data, data.data.expiresIn);
-      
+      setVerificationError({ show: false, email: null });
+
       // Redirect back to the previous URL if available, otherwise go to homepage
       if (redirectUrl) {
         router.push(decodeURIComponent(redirectUrl));
@@ -61,14 +67,60 @@ const LoginForm = () => {
         router.push("/");
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      const msg = error.response?.data?.message || error.message;
-      toast.error(msg);
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error) && error.response) {
+        const response = error.response.data as {
+          message?: string;
+          data?: { email?: string };
+        };
+        const status = error.response.status;
+        const msg = response?.message || (error as Error).message;
+
+        // Handle verification error
+        if (status === 403 && response?.data?.email) {
+          setVerificationError({ show: true, email: response.data.email });
+        } else {
+          // Handle other errors
+          toast.error(msg);
+        }
+      } else {
+        // Handle non-axios errors
+        toast.error((error as Error).message || "Có lỗi xảy ra khi đăng nhập");
+      }
     },
   });
 
+  const resendVerificationMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await axios.post("/api/send-otp", { email });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success(
+        "Mã xác minh đã được gửi. Vui lòng kiểm tra email của bạn.",
+      );
+      router.push("/otp");
+    },
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error) && error.response) {
+        const msg = error.response.data?.message || (error as Error).message;
+        toast.error(msg);
+      } else {
+        toast.error(
+          (error as Error).message || "Có lỗi xảy ra khi gửi mã xác minh",
+        );
+      }
+    },
+  });
+
+  const handleResendVerification = async () => {
+    if (verificationError.email) {
+      await resendVerificationMutation.mutateAsync(verificationError.email);
+    }
+  };
+
   async function onSubmit(request: LoginSchema) {
+    setVerificationError({ show: false, email: null });
     await loginMutation.mutateAsync(request);
   }
 
@@ -83,6 +135,27 @@ const LoginForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {verificationError.show && (
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800">
+              Tài khoản chưa xác minh
+            </AlertTitle>
+            <AlertDescription className="text-amber-700">
+              Vui lòng xác minh email trước khi đăng nhập.
+              <Button
+                variant="link"
+                className="h-auto p-0 pl-1 font-medium text-amber-800 hover:text-amber-900"
+                onClick={handleResendVerification}
+                disabled={resendVerificationMutation.isPending}
+              >
+                {resendVerificationMutation.isPending
+                  ? "Đang gửi..."
+                  : "Gửi lại mã xác minh"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         <Form {...form}>
           <motion.form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -139,7 +212,9 @@ const LoginForm = () => {
             <Button
               type="submit"
               className="w-full bg-rose-600 hover:bg-rose-700"
-              disabled={loginMutation.isPending}
+              disabled={
+                loginMutation.isPending || resendVerificationMutation.isPending
+              }
             >
               {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>

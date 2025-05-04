@@ -36,6 +36,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Check if user is verified
+  if (!user.isVerified) {
+    return NextResponse.json(
+      makeResponse({
+        status: 403,
+        data: { email: user.email },
+        message:
+          "Tài khoản chưa được xác minh. Vui lòng xác minh email trước khi đăng nhập.",
+      }),
+      { status: 403 },
+    );
+  }
+
   const token = await generateJWT({
     userId: user.id.toString(),
     role: user.role,

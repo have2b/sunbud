@@ -24,3 +24,20 @@ export async function verifyJWT(token: string): Promise<JWTPayload> {
   const { payload } = await jwtVerify(token, secret);
   return payload;
 }
+
+/**
+ * Format a date into a readable string
+ * @param date Date to format
+ * @param options Date formatting options
+ * @returns Formatted date string
+ */
+export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions) {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', options || defaultOptions).format(dateObj);
+}
