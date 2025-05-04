@@ -8,6 +8,7 @@ import {
 } from "@/generated/prisma";
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
+import { format } from "date-fns";
 import "dotenv/config";
 
 const prisma = new PrismaClient();
@@ -23,6 +24,18 @@ const getRandomDateInPast6Months = () => {
 
   // Random date between now and 6 months ago
   return faker.date.between({ from: sixMonthsAgo, to: now });
+};
+
+// Helper function to generate a random date within the past month
+const getRandomDateInPastMonth = () => {
+  // Current date
+  const now = new Date();
+  // 1 month ago
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(now.getMonth() - 1);
+
+  // Random date between now and 1 month ago
+  return faker.date.between({ from: oneMonthAgo, to: now });
 };
 
 async function seedCategories(count = 20) {
@@ -142,12 +155,14 @@ async function seedOrders(count = 100, batchSize = 20) {
   while (rows.length < count) {
     // Randomly select a user
     const randomUser = users[Math.floor(Math.random() * users.length)];
+    const randomShipper = users
+      .filter((user) => user.role === Role.SHIPPER)
+      .map((user) => user.id)[Math.floor(Math.random() * users.length)];
 
     rows.push({
+      orderCode: format(getRandomDateInPastMonth(), "HHmmss"),
       userId: randomUser.id,
-      shipperId: users
-        .filter((user) => user.role === Role.SHIPPER)
-        .map((user) => user.id)[Math.floor(Math.random() * users.length)],
+      shipperId: randomShipper,
       status: faker.helpers.enumValue(OrderStatus),
       paymentStatus: faker.helpers.enumValue(PaymentStatus),
       paymentMethod: faker.helpers.enumValue(PaymentMethod),

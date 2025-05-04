@@ -14,10 +14,10 @@ export const createOrderColumns = (
   handleEdit: (order: OrderWithUser) => void,
 ): ColumnDef<OrderWithUser>[] => [
   {
-    accessorKey: "id",
+    accessorKey: "orderCode",
     header: "Mã đơn hàng",
     cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("id")}</span>
+      <span className="font-medium">{row.getValue("orderCode")}</span>
     ),
   },
   {

@@ -5,6 +5,7 @@ import {
   PrismaClient,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
+import { format } from "date-fns";
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
       // Create order
       const newOrder = await tx.order.create({
         data: {
+          orderCode: format(new Date(), "HHmmss"),
           totalAmount,
           paymentMethod: (paymentMethod as PaymentMethod) || PaymentMethod.BANK,
           paymentStatus:

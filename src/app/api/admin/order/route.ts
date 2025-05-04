@@ -7,6 +7,7 @@ import {
   PrismaClient,
 } from "@/generated/prisma";
 import { makeResponse } from "@/utils/make-response";
+import { format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 
 const db = new PrismaClient();
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
   const userId = searchParams.get("userId");
+  const orderCode = searchParams.get("orderCode");
   const status = searchParams.get("status")?.toUpperCase() as OrderStatus;
   const paymentStatus = searchParams
     .get("paymentStatus")
@@ -59,6 +61,7 @@ export async function GET(request: NextRequest) {
 
   const conditions: Prisma.OrderWhereInput[] = [];
   if (userId) conditions.push({ userId: Number(userId) });
+  if (orderCode) conditions.push({ orderCode: { contains: orderCode } });
   if (status) conditions.push({ status });
   if (paymentStatus) conditions.push({ paymentStatus });
   if (paymentMethod) conditions.push({ paymentMethod });
@@ -117,6 +120,7 @@ export async function POST(request: NextRequest) {
   }
   const inserted = await db.order.create({
     data: {
+      orderCode: format(new Date(), "HHmmss"),
       userId: Number(userId),
       status: status as OrderStatus,
       paymentStatus: paymentStatus as PaymentStatus,

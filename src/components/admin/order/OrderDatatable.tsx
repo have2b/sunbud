@@ -16,6 +16,7 @@ export default function OrderDatatable() {
 
   const detailFields: DetailField<Order>[] = [
     { label: "ID", key: "id" },
+    { label: "Mã đơn hàng", key: "orderCode" },
     {
       label: "Người mua",
       key: "user",
@@ -24,7 +25,8 @@ export default function OrderDatatable() {
     {
       label: "Shipper",
       key: "shipper",
-      render: (shipper) => `${shipper.firstName} ${shipper.lastName}`,
+      render: (shipper) =>
+        `${shipper?.firstName || ""} ${shipper?.lastName || ""}`,
     },
     { label: "Trạng thái", key: "status" },
     { label: "Phương thức thanh toán", key: "paymentMethod" },
@@ -73,8 +75,8 @@ export default function OrderDatatable() {
         columns={createOrderColumns((order) => setEditOrder(order))}
         filterFields={orderFilterFields}
         searchableFields={{
-          placeholder: "Tìm kiếm theo số đơn hàng...",
-          onSearch: (input) => [{ field: "id", value: input }],
+          placeholder: "Tìm kiếm theo mã đơn hàng...",
+          onSearch: (input) => [{ field: "orderCode", value: input }],
         }}
         initialPageSize={10}
         onRowClick={dialog.openDialog}
