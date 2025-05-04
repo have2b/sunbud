@@ -160,7 +160,7 @@ async function seedOrders(count = 100, batchSize = 20) {
       .map((user) => user.id)[Math.floor(Math.random() * users.length)];
 
     rows.push({
-      orderCode: format(getRandomDateInPastMonth(), "HHmmss"),
+      orderCode: format(getRandomDateInPastMonth(), "yyMMddHHmmss"),
       userId: randomUser.id,
       shipperId: randomShipper,
       status: faker.helpers.enumValue(OrderStatus),

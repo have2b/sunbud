@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
-  const userId = searchParams.get("userId");
+  const user = searchParams.get("user");
   const orderCode = searchParams.get("orderCode");
   const status = searchParams.get("status")?.toUpperCase() as OrderStatus;
   const paymentStatus = searchParams
@@ -60,7 +60,13 @@ export async function GET(request: NextRequest) {
   const maxTotal = searchParams.get("maxTotal");
 
   const conditions: Prisma.OrderWhereInput[] = [];
-  if (userId) conditions.push({ userId: Number(userId) });
+  if (user)
+    conditions.push({
+      OR: [
+        { user: { firstName: { contains: user } } },
+        { user: { lastName: { contains: user } } },
+      ],
+    });
   if (orderCode) conditions.push({ orderCode: { contains: orderCode } });
   if (status) conditions.push({ status });
   if (paymentStatus) conditions.push({ paymentStatus });
@@ -120,7 +126,7 @@ export async function POST(request: NextRequest) {
   }
   const inserted = await db.order.create({
     data: {
-      orderCode: format(new Date(), "HHmmss"),
+      orderCode: format(new Date(), "yyMMddHHmmss"),
       userId: Number(userId),
       status: status as OrderStatus,
       paymentStatus: paymentStatus as PaymentStatus,

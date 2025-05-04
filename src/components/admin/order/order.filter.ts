@@ -2,6 +2,11 @@ import { FilterField } from "@/components/common/FilterDialog";
 
 export const orderFilterFields: FilterField[] = [
   {
+    key: "user",
+    label: "Khách hàng",
+    type: "string",
+  },
+  {
     key: "status",
     label: "Trạng thái",
     type: "string",

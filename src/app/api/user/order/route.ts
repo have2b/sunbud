@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       // Create order
       const newOrder = await tx.order.create({
         data: {
-          orderCode: format(new Date(), "HHmmss"),
+          orderCode: format(new Date(), "yyMMddHHmmss"),
           totalAmount,
           paymentMethod: (paymentMethod as PaymentMethod) || PaymentMethod.BANK,
           paymentStatus:
