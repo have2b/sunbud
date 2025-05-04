@@ -42,7 +42,7 @@ export const avatarDropdownItems = [
 ] as const;
 
 export const sidebarDropdownItems = [
-  { label: "Thông tin cá nhân", href: "/account", icon: <UserIcon /> },
+  { label: "Thông tin cá nhân", href: "/profile", icon: <UserIcon /> },
 ];
 
 export const mainNavItems = [
