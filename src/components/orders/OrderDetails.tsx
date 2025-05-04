@@ -1,14 +1,20 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Order } from "@/types/order";
 import { formatCurrency } from "@/utils/format";
 import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface OrderDetailsProps {
   order: Order;
+  onStatusChange?: () => void;
 }
 
-export default function OrderDetails({ order }: OrderDetailsProps) {
+export default function OrderDetails({ order, onStatusChange }: OrderDetailsProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  
   // Convert payment method to display text
   const getPaymentMethodText = (method: string) => {
     const methodMap: Record<string, string> = {
@@ -27,6 +33,49 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
     };
 
     return methodMap[method] || method;
+  };
+  
+  // Check if order can be cancelled (only PENDING or VERIFIED orders)
+  const canBeCancelled = order.status === "PENDING" || order.status === "VERIFIED";
+  
+  // Handle order cancellation
+  const handleCancelOrder = async () => {
+    // Early return if already processing
+    if (isLoading) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch("/api/user/order/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.status !== 200) {
+        throw new Error(result.message || "Hủy đơn hàng thất bại");
+      }
+      
+      // Update order status in UI
+      order.status = "CANCELLED";
+      
+      // Show success message
+      toast.success("Đơn hàng đã được hủy thành công");
+      
+      // Notify parent component to refresh orders
+      if (onStatusChange) {
+        onStatusChange();
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error(error instanceof Error ? error.message : "Hủy đơn hàng thất bại");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -119,6 +168,22 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
             {formatCurrency(order.totalAmount)} VNĐ
           </span>
         </div>
+        
+        {canBeCancelled && (
+          <div className="mt-4 flex justify-end">
+            <Button 
+              variant="destructive"
+              size="sm"
+              onClick={handleCancelOrder}
+              disabled={isLoading}
+              className="font-medium text-xs"
+              aria-label="Hủy đơn hàng"
+              tabIndex={0}
+            >
+              {isLoading ? "Đang xử lý..." : "Hủy đơn hàng"}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

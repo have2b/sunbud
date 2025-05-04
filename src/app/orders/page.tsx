@@ -4,7 +4,7 @@ import OrderHistoryList from "@/components/orders/OrderHistoryList";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { Order } from "@/types/order";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -35,6 +35,37 @@ export default function OrdersPage() {
     };
   }, []);
 
+  // Function to fetch orders - wrapped in useCallback to prevent unnecessary re-renders
+  const fetchOrders = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/user/order/history");
+      const result = await response.json();
+
+      if (result.status !== 200) {
+        throw new Error(result.message || "Failed to fetch order history");
+      }
+
+      setOrders(result.data);
+    } catch (err) {
+      console.error("Error fetching order history:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load order history",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+  
+  // Handle refresh orders after status change (like cancellation)
+  const handleOrderStatusChange = () => {
+    fetchOrders();
+  };
+
   useEffect(() => {
     // Only check authentication after hydration is complete
     if (!isHydrated) return;
@@ -45,32 +76,9 @@ export default function OrdersPage() {
       return;
     }
 
-    // Fetch order history
-    const fetchOrders = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch("/api/user/order/history");
-        const result = await response.json();
-
-        if (result.status !== 200) {
-          throw new Error(result.message || "Failed to fetch order history");
-        }
-
-        setOrders(result.data);
-      } catch (err) {
-        console.error("Error fetching order history:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load order history",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    // Fetch order history on component mount
     fetchOrders();
-  }, [user, router, isHydrated]);
+  }, [user, router, isHydrated, fetchOrders]);
 
   // Show loading state if not hydrated yet
   if (!isHydrated) {
@@ -108,7 +116,10 @@ export default function OrdersPage() {
       )}
 
       {!isLoading && !error && orders.length > 0 && (
-        <OrderHistoryList orders={orders} />
+        <OrderHistoryList 
+          orders={orders} 
+          onOrderStatusChange={handleOrderStatusChange} 
+        />
       )}
     </div>
   );

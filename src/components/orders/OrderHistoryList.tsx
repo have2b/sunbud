@@ -12,9 +12,10 @@ import { formatCurrency } from "@/utils/format";
 
 interface OrderHistoryListProps {
   orders: Order[];
+  onOrderStatusChange?: () => void;
 }
 
-export default function OrderHistoryList({ orders }: OrderHistoryListProps) {
+export default function OrderHistoryList({ orders, onOrderStatusChange }: OrderHistoryListProps) {
   // Format date helper function
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -85,7 +86,7 @@ export default function OrderHistoryList({ orders }: OrderHistoryListProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <OrderDetails order={order} />
+              <OrderDetails order={order} onStatusChange={onOrderStatusChange} />
             </AccordionContent>
           </AccordionItem>
         ))}
