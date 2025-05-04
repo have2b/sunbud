@@ -1,36 +1,169 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="/public/logo.svg" alt="Sunbud Logo" width="120" />
+</p>
 
-## Getting Started
+<h1 align="center">🌻 Sunbud – Modern E-commerce Platform</h1>
 
-First, run the development server:
+<p align="center">
+  <b>Beautiful, robust, and accessible shopping experience for everyone.</b>
+</p>
+
+---
+
+## 🛒 System Overview
+
+Sunbud is a full-featured e-commerce solution designed for both shoppers and admins:
+
+- 🛍️ Product catalog with detailed pages
+- 🛒 Shopping cart with real-time stock validation
+- 🔐 User authentication & profile management
+- 🚚 Order processing with multiple delivery methods
+- 🛠️ Admin dashboard for product, category, and order management
+- 📱 Responsive, accessible design
+
+---
+
+## ⚡ Technology Stack
+
+- **Frontend:**
+
+  - Next.js 15 (App Router)
+  - TypeScript
+  - TailwindCSS (utility-first styling)
+  - Shadcn UI & Radix UI (modern, accessible components)
+
+- **State Management:**
+
+  - Zustand (with persist middleware for cart)
+  - React Context
+
+- **Backend/API:**
+
+  - Next.js API routes (REST architecture)
+  - Prisma ORM (database access)
+
+- **Other:**
+  - LocalStorage for cart persistence
+  - Toast notifications for user feedback
+
+---
+
+## ✨ Key Features
+
+- **Product Management:** Create, edit, and delete products (admin)
+- **Stock Management:** Real-time stock tracking & validation
+- **Shopping Cart:** Add, update, and remove items (with stock checks)
+- **User Accounts:** Register, login, manage profiles
+- **Checkout:** Multiple delivery methods, address validation
+- **Admin Dashboard:** Comprehensive management tools
+- **Order Management:** Process, track, and update orders
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18.x or newer
+- Bun.js
+- npm or yarn
+- Database (see `.env.example` for config)
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/sunbud.git
+cd sunbud
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Copy `.env.example` to `.env` and fill in your database/config values.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Database Setup
 
-## Learn More
+```bash
+bunx prisma generate
+bunx prisma db push
+# (Optional) Seed with:
+bun run seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏃 Running the Application
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Development
 
-## Deploy on Vercel
+```bash
+bun run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Visit [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Production
+
+```bash
+bun run build && bun run start
+```
+
+---
+
+## 👤 Admin Access
+
+- Go to [http://localhost:3000/admin](http://localhost:3000/admin)
+- Use your admin credentials to log in
+
+---
+
+## 📂 Project Structure
+
+- `src/app` – Next.js app & API routes
+- `src/components` – Reusable UI components
+- `src/lib` – Utility functions
+- `src/db` – Database schema/config
+- `public` – Static assets (logo, images)
+
+---
+
+## 📝 Usage Guidance
+
+### For Shoppers
+
+1. **Browse** products and categories
+2. **Add to Cart** (with real-time stock validation)
+3. **View Cart** and adjust quantities (cannot exceed available stock)
+4. **Checkout**:
+   - Choose delivery method
+   - Enter address (if shipping)
+   - Confirm and place your order
+5. **Track Orders** via your profile
+
+### For Admins
+
+1. **Log in** at `/admin`
+2. **Manage Products**: create, edit, delete, adjust stock
+3. **Manage Categories**: organize your catalog
+4. **Process Orders**: update order status, view customer info
+
+---
+
+## ♿ Accessibility & UX
+
+- All UI components use accessible patterns (keyboard navigation, ARIA labels, focus management)
+- Responsive design for mobile & desktop
+- Modern look and feel with TailwindCSS, Shadcn, and Radix
+- Toast notifications for instant user feedback
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! Please open an issue or PR to discuss improvements.
+
+---
+
+## 📄 License
+
+[MIT License](LICENSE)
